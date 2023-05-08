@@ -44,7 +44,7 @@ func Register(c *gin.Context) {
 		result, err := utils.CheckBase().Database("PametniPaketnik").Collection("users").InsertOne(context.TODO(), registerUser)
 		fmt.Println(err)
 		fmt.Println(result.InsertedID)
-		c.IndentedJSON(http.StatusOK, "Poceede")
+		c.IndentedJSON(http.StatusOK, "Proceede")
 		return
 	}
 
