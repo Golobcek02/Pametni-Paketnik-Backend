@@ -69,8 +69,9 @@ func RemoveBox(c *gin.Context) {
 
 func GetUserBoxes(c *gin.Context) {
 	var allBoxes []schemas.Box
+	var usrid = c.Param("id")
 
-	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), bson.D{{}})
+	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), bson.D{{Key: "ownerid", Value: usrid}})
 	if err == mongo.ErrNoDocuments {
 		c.IndentedJSON(http.StatusInternalServerError, "Error")
 	}
