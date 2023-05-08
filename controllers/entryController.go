@@ -10,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func GetUserEntries(c *gin.Context) {
@@ -18,7 +19,7 @@ func GetUserEntries(c *gin.Context) {
 	var tid = c.Param("id")
 
 	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), bson.D{{Key: "ownerid", Value: tid}})
-	if err != nil {
+	if err == mongo.ErrNoDocuments {
 		c.IndentedJSON(http.StatusNotFound, allOpenings)
 	}
 
@@ -29,6 +30,10 @@ func GetUserEntries(c *gin.Context) {
 			log.Fatal(err)
 		}
 		boxids = append(boxids, elem.BoxId)
+	}
+
+	if len(boxids) == 0 {
+		c.IndentedJSON(http.StatusOK, allOpenings)
 	}
 
 	cur, error := utils.CheckBase().Database("PametniPaketnik").Collection("entries").Find(context.TODO(), bson.D{{Key: "boxid", Value: bson.D{{Key: "$in", Value: boxids}}}})
