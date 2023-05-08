@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func AddUserBox(c *gin.Context) {
@@ -48,10 +49,11 @@ func AddUserBox(c *gin.Context) {
 	box.OwnerId = requestData.UserID
 	fmt.Println(box)
 	fmt.Println(requestData)
+	opts := options.Update().SetUpsert(true)
 
-	result, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").InsertOne(context.TODO(), box)
+	result, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(context.TODO(), bson.D{{}}, box, opts)
 	fmt.Println(err)
-	fmt.Println(result.InsertedID)
+	fmt.Println(result.UpsertedCount)
 
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "Smartbox ID successfully inserted!"})
 }
@@ -59,7 +61,7 @@ func AddUserBox(c *gin.Context) {
 func RemoveBox(c *gin.Context) {
 	var boxid = c.Param("id")
 
-	_, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").DeleteOne(context.TODO(), bson.D{{Key: "boxid", Value: boxid}})
+	_, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(context.TODO(), bson.D{{Key: "boxid", Value: boxid}}, bson.D{{Key: "$set", Value: bson.D{{Key: "ownerid", Value: "0"}}}})
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, "Error while deleting this box")
 	}
