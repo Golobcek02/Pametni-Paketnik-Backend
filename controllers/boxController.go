@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func AddUserBox(c *gin.Context) {
@@ -39,7 +40,12 @@ func AddUserBox(c *gin.Context) {
 		}
 		tmp, _ := strconv.Atoi(requestData.SmartBoxID)
 		if elem.BoxId == tmp {
-			c.IndentedJSON(http.StatusNotAcceptable, gin.H{"error": err.Error()})
+			_, error := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(context.Background(), bson.D{{Key: "boxid", Value: elem.BoxId}}, bson.D{{Key: "$set", Value: bson.D{{Key: "ownerid", Value: "0"}}}}, options.Update().SetUpsert(true))
+			if error != nil {
+				panic(error)
+			}
+
+			c.IndentedJSON(http.StatusOK, gin.H{"message": "Box successfully updated!"})
 			return
 		}
 	}
@@ -53,7 +59,7 @@ func AddUserBox(c *gin.Context) {
 	fmt.Println(err)
 	fmt.Println(result.InsertedID)
 
-	c.IndentedJSON(http.StatusOK, gin.H{"message": "Smartbox ID successfully inserted!"})
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "Box successfully inserted!"})
 }
 
 func RemoveBox(c *gin.Context) {
