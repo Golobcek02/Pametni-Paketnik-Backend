@@ -85,7 +85,7 @@ func ClearBoxOwner(c *gin.Context) {
 	boxIdInt, _ := strconv.Atoi(boxid)
 
 	filter := bson.D{{Key: "boxid", Value: boxIdInt}}
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "ownerid", Value: ""}}}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "ownerid", Value: '0'}}}}
 
 	res, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(context.TODO(), filter, update)
 	if err != nil {
