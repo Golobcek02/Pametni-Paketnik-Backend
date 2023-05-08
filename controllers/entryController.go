@@ -5,11 +5,8 @@ import (
 	"backend/utils"
 	"context"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"net/http"
-	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -17,23 +14,17 @@ import (
 
 func GetUserEntries(c *gin.Context) {
 	var allOpenings []schemas.Entry
-	var res schemas.User
 	var boxids []int
+	var tid = c.Param("id")
 
-	id, err := primitive.ObjectIDFromHex(c.Param("id"))
-	if err != nil {
-		panic(err)
-	}
-
-	error := utils.CheckBase().Database("PametniPaketnik").Collection("users").FindOne(context.Background(), bson.M{"_id": id}).Decode(&res)
-	s := strings.Split(res.UserBoxes, "||")
-
-	//fmt.Print(error)
-	//fmt.Print(res.Username)
-
-	for _, str := range s {
-		intVal, _ := strconv.Atoi(str)
-		boxids = append(boxids, intVal)
+	cur, _ := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), bson.D{{Key: "ownerid", Value: tid}})
+	for cur.Next(context.TODO()) {
+		var elem schemas.Box
+		err := cur.Decode(&elem)
+		if err != nil {
+			log.Fatal(err)
+		}
+		boxids = append(boxids, elem.BoxId)
 	}
 
 	cur, error := utils.CheckBase().Database("PametniPaketnik").Collection("entries").Find(context.TODO(), bson.D{{Key: "boxid", Value: bson.D{{Key: "$in", Value: boxids}}}})
@@ -47,12 +38,7 @@ func GetUserEntries(c *gin.Context) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		/*for _, str := range s {
-		x, _ := strconv.Atoi(str)
-		if x == elem.BoxId {*/
 		allOpenings = append(allOpenings, elem)
-		/*}
-		}*/
 	}
 
 	c.IndentedJSON(http.StatusOK, allOpenings)

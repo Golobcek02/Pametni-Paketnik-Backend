@@ -4,57 +4,50 @@ import (
 	"backend/schemas"
 	"backend/utils"
 	"context"
+	"fmt"
+	"log"
+	"net/http"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"net/http"
 )
 
 func AddUserBox(c *gin.Context) {
 	var requestData struct {
-		UserID     string `json:"user_id"`
-		SmartBoxID string `json:"smartbox_id"`
+		UserID     string
+		SmartBoxID string
 	}
 
 	if err := c.BindJSON(&requestData); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	userID, err := primitive.ObjectIDFromHex(requestData.UserID)
+	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.Background(), bson.D{{"ownerid", requestData.UserID}})
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	var user schemas.User
-	err = utils.CheckBase().Database("PametniPaketnik").Collection("users").FindOne(context.Background(), bson.M{"_id": userID}).Decode(&user)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+	for cur.Next(context.TODO()) {
+		var elem schemas.Box
+		err := cur.Decode(&elem)
+		if err != nil {
+			log.Fatal(err)
+		}
+		tmp, _ := strconv.Atoi(requestData.SmartBoxID)
+		if elem.BoxId == tmp {
+			c.IndentedJSON(http.StatusNotAcceptable, gin.H{"error": err.Error()})
+			return
+		}
 	}
+	var box schemas.Box
+	box.BoxId, _ = strconv.Atoi(requestData.SmartBoxID)
+	box.OwnerId = requestData.UserID
+	result, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").InsertOne(context.TODO(), box)
+	fmt.Println(err)
+	fmt.Println(result.InsertedID)
 
-	newUserBoxes := user.UserBoxes
-	if newUserBoxes != "" {
-		newUserBoxes += "||"
-	}
-	newUserBoxes += requestData.SmartBoxID
-
-	updateResult, err := utils.CheckBase().Database("PametniPaketnik").Collection("users").UpdateOne(
-		context.Background(),
-		bson.M{"_id": userID},
-		bson.M{"$set": bson.M{"userboxes": newUserBoxes}},
-	)
-
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	if updateResult.ModifiedCount == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found or smartbox ID already in userboxes"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"message": "Smartbox ID successfully appended to userboxes"})
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "Smartbox ID successfully inserted!"})
 }
