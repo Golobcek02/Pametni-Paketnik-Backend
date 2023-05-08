@@ -26,7 +26,7 @@ func AddUserBox(c *gin.Context) {
 		return
 	}
 
-	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.Background(), bson.D{{Key: "ownerid", Value: requestData.UserID}})
+	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.Background(), bson.D{{}})
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -38,9 +38,13 @@ func AddUserBox(c *gin.Context) {
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		tmp, _ := strconv.Atoi(requestData.SmartBoxID)
-		if elem.BoxId == tmp {
-			_, error := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(context.Background(), bson.D{{Key: "boxid", Value: elem.BoxId}}, bson.D{{Key: "$set", Value: bson.D{{Key: "ownerid", Value: "0"}}}}, options.Update().SetUpsert(true))
+		if elem.BoxId == tmp && elem.OwnerId == "0" {
+			_, error := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(context.Background(),
+				bson.D{{Key: "boxid", Value: elem.BoxId}},
+				bson.D{{Key: "$set", Value: bson.D{{Key: "ownerid", Value: requestData.UserID}}}},
+				options.Update().SetUpsert(true))
 			if error != nil {
 				panic(error)
 			}
@@ -49,6 +53,7 @@ func AddUserBox(c *gin.Context) {
 			return
 		}
 	}
+
 	var box schemas.Box
 	box.BoxId, _ = strconv.Atoi(requestData.SmartBoxID)
 	box.OwnerId = requestData.UserID
