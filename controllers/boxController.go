@@ -24,7 +24,7 @@ func AddUserBox(c *gin.Context) {
 		return
 	}
 
-	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.Background(), bson.D{{"ownerid", requestData.UserID}})
+	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.Background(), bson.D{{Key: "ownerid", Value: requestData.UserID}})
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -45,6 +45,9 @@ func AddUserBox(c *gin.Context) {
 	var box schemas.Box
 	box.BoxId, _ = strconv.Atoi(requestData.SmartBoxID)
 	box.OwnerId = requestData.UserID
+	fmt.Println(box)
+	fmt.Println(requestData)
+
 	result, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").InsertOne(context.TODO(), box)
 	fmt.Println(err)
 	fmt.Println(result.InsertedID)
