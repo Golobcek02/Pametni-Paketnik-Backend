@@ -12,6 +12,7 @@ func Router(Router *gin.Engine) {
 	Router.POST("/newEntry", controllers.InsertNewEntry)
 	Router.GET("/getEntries/:id", controllers.GetUserEntries)
 	Router.POST("/addUserBox", controllers.AddUserBox)
-	Router.DELETE("/removeEntry", controllers.RemoveEntry)
-	Router.DELETE("/removeBox", controllers.RemoveBox)
+	Router.DELETE("/removeEntry/:id", controllers.RemoveEntry)
+	Router.DELETE("/removeBox/:id", controllers.RemoveBox)
+	Router.GET("/getUserBoxes", controllers.GetUserBoxes)
 }

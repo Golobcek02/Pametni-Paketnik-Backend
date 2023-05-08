@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func AddUserBox(c *gin.Context) {
@@ -53,4 +54,38 @@ func AddUserBox(c *gin.Context) {
 	fmt.Println(result.InsertedID)
 
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "Smartbox ID successfully inserted!"})
+}
+
+func RemoveBox(c *gin.Context) {
+	var boxid = c.Param("id")
+
+	_, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").DeleteOne(context.TODO(), bson.D{{Key: "boxid", Value: boxid}})
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, "Error while deleting this box")
+	}
+
+	c.IndentedJSON(http.StatusOK, "successfully deleted")
+}
+
+func GetUserBoxes(c *gin.Context) {
+	var allBoxes []schemas.Box
+
+	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), bson.D{{}})
+	if err == mongo.ErrNoDocuments {
+		c.IndentedJSON(http.StatusInternalServerError, "Error")
+	}
+
+	for cur.Next(context.TODO()) {
+		var elem schemas.Box
+		err := cur.Decode(&elem)
+		if err != nil {
+			log.Fatal(err)
+		}
+		allBoxes = append(allBoxes, elem)
+	}
+
+	if len(allBoxes) == 0 {
+		c.IndentedJSON(http.StatusBadRequest, "Error")
+	}
+	c.IndentedJSON(http.StatusOK, allBoxes)
 }
