@@ -40,7 +40,7 @@ func AddUserBox(c *gin.Context) {
 		}
 
 		tmp, _ := strconv.Atoi(requestData.SmartBoxID)
-		if elem.BoxId == tmp && elem.OwnerId == "0" {
+		if elem.BoxId == tmp && elem.OwnerId == "" {
 			_, error := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(context.Background(),
 				bson.D{{Key: "boxid", Value: elem.BoxId}},
 				bson.D{{Key: "$set", Value: bson.D{{Key: "ownerid", Value: requestData.UserID}}}},
@@ -85,7 +85,7 @@ func ClearBoxOwner(c *gin.Context) {
 	boxIdInt, _ := strconv.Atoi(boxid)
 
 	filter := bson.D{{Key: "boxid", Value: boxIdInt}}
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "ownerid", Value: '0'}}}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "ownerid", Value: ""}}}}
 
 	res, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(context.TODO(), filter, update)
 	if err != nil {
