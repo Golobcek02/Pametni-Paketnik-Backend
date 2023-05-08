@@ -5,6 +5,7 @@ import (
 	"backend/utils"
 	"context"
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"net/http"
 
@@ -71,12 +72,10 @@ func InsertNewEntry(c *gin.Context) {
 }
 
 func RemoveEntry(c *gin.Context) {
-	entryId := c.Param("entryId")
+	entryId := c.Param("id")
+	str, err := primitive.ObjectIDFromHex(entryId)
+	filter := bson.M{"_id": str}
 
-	// Construct the filter to find the entry with the given entryId
-	filter := bson.M{"_id": entryId}
-
-	// Remove the entry from the "entries" collection
 	result, err := utils.CheckBase().Database("PametniPaketnik").Collection("entries").DeleteOne(context.TODO(), filter)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
