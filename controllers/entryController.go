@@ -5,6 +5,7 @@ import (
 	"backend/utils"
 	"context"
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"log"
 	"net/http"
 	"strconv"
@@ -18,11 +19,18 @@ func GetUserEntries(c *gin.Context) {
 	var allOpenings []schemas.Entry
 	var res schemas.User
 	var boxids []int
-	var id = c.Param("id")
-	marks, _ := strconv.Atoi(id)
 
-	utils.CheckBase().Database("PametniPaketnik").Collection("users").FindOne(context.Background(), bson.M{"_id": marks}).Decode(&res)
+	id, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		panic(err)
+	}
+
+	error := utils.CheckBase().Database("PametniPaketnik").Collection("users").FindOne(context.Background(), bson.M{"_id": id}).Decode(&res)
 	s := strings.Split(res.UserBoxes, "||")
+
+	//fmt.Print(error)
+	//fmt.Print(res.Username)
+
 	for _, str := range s {
 		intVal, _ := strconv.Atoi(str)
 		boxids = append(boxids, intVal)
