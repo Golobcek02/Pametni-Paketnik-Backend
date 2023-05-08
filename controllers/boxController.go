@@ -80,6 +80,27 @@ func RemoveBox(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, "successfully deleted")
 }
 
+func ClearBoxOwner(c *gin.Context) {
+	boxid := c.Param("id")
+	boxIdInt, _ := strconv.Atoi(boxid)
+
+	filter := bson.D{{Key: "boxid", Value: boxIdInt}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "ownerid", Value: ""}}}}
+
+	res, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Error while clearing the owner of this box"})
+		return
+	}
+
+	if res.ModifiedCount == 0 {
+		c.IndentedJSON(http.StatusNotFound, gin.H{"error": "Box not found"})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "Owner of the box successfully cleared"})
+}
+
 func GetUserBoxes(c *gin.Context) {
 	var allBoxes []schemas.Box
 	var usrid = c.Param("id")

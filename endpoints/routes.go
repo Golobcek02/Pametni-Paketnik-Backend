@@ -15,4 +15,5 @@ func Router(Router *gin.Engine) {
 	Router.DELETE("/removeEntry/:id", controllers.RemoveEntry)
 	Router.DELETE("/removeBox/:id", controllers.RemoveBox)
 	Router.GET("/getUserBoxes/:id", controllers.GetUserBoxes)
+	Router.PUT("/clearBox/:id", controllers.ClearBoxOwner)
 }
