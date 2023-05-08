@@ -17,7 +17,11 @@ func GetUserEntries(c *gin.Context) {
 	var boxids []int
 	var tid = c.Param("id")
 
-	cur, _ := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), bson.D{{Key: "ownerid", Value: tid}})
+	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), bson.D{{Key: "ownerid", Value: tid}})
+	if err != nil {
+		c.IndentedJSON(http.StatusNotFound, allOpenings)
+	}
+
 	for cur.Next(context.TODO()) {
 		var elem schemas.Box
 		err := cur.Decode(&elem)
