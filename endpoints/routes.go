@@ -11,4 +11,5 @@ func Router(Router *gin.Engine) {
 	Router.POST("/login", controllers.LogIn)
 	Router.POST("/newEntry", controllers.InsertNewEntry)
 	Router.GET("/getEntries/:id", controllers.GetUserEntries)
+	Router.POST("/addUserBox", controllers.AddUserBox)
 }
