@@ -51,9 +51,9 @@ func AddUserBox(c *gin.Context) {
 	fmt.Println(requestData)
 	opts := options.Update().SetUpsert(true)
 
-	result, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(context.TODO(), bson.D{{}}, box, opts)
+	result, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(context.TODO(), bson.D{{Key: "boxid", Value: box.BoxId}}, box, opts)
 	fmt.Println(err)
-	fmt.Println(result.UpsertedCount)
+	fmt.Print(result)
 
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "Smartbox ID successfully inserted!"})
 }
