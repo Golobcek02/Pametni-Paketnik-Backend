@@ -5,6 +5,7 @@ import (
 	"backend/utils"
 	"context"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -120,9 +121,8 @@ func RewokeAccess(c *gin.Context) {
 
 func CheckAccess(c *gin.Context) {
 	var requestData struct {
-		UserID   string
-		AccessId string
-		BoxId    int
+		UserID string
+		BoxId  int
 	}
 
 	if err := c.BindJSON(&requestData); err != nil {
@@ -130,17 +130,15 @@ func CheckAccess(c *gin.Context) {
 		return
 	}
 
-	str, _ := primitive.ObjectIDFromHex(requestData.UserID)
-
 	var res schemas.Access
-	error := utils.CheckBase().Database("PametniPaketnik").Collection("access").FindOne(context.Background(), bson.M{"ownerid": str}).Decode(&res)
+	error := utils.CheckBase().Database("PametniPaketnik").Collection("access").FindOne(context.Background(), bson.M{"boxid": requestData.BoxId}).Decode(&res)
 
 	if error != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": error.Error()})
+		c.IndentedJSON(http.StatusForbidden, "You have no accesses")
 		return
 	}
 
-	if utils.GetMatch(res.AccessIds, requestData.AccessId) {
+	if utils.GetMatch(res.AccessIds, requestData.UserID) {
 		c.IndentedJSON(http.StatusOK, "Allowed")
 	} else {
 		c.IndentedJSON(http.StatusForbidden, "Denied")
@@ -150,9 +148,8 @@ func CheckAccess(c *gin.Context) {
 
 func GetAllAccess(c *gin.Context) {
 	var requestData struct {
-		UserID   string
-		AccessId string
-		BoxId    string
+		UserID string
+		BoxId  string
 	}
 
 	if err := c.BindJSON(&requestData); err != nil {
@@ -162,18 +159,48 @@ func GetAllAccess(c *gin.Context) {
 
 	str, _ := primitive.ObjectIDFromHex(requestData.UserID)
 
-	var res schemas.Access
-	error := utils.CheckBase().Database("PametniPaketnik").Collection("access").FindOne(context.Background(), bson.M{"ownerid": str}).Decode(&res)
-
+	var res []schemas.Access
+	var allBoxes []schemas.Box
+	cur, error := utils.CheckBase().Database("PametniPaketnik").Collection("access").Find(context.Background(), bson.M{"ownerid": str})
 	if error != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": error.Error()})
+		c.IndentedJSON(http.StatusInternalServerError, "Error")
 		return
 	}
 
-	if utils.GetMatch(res.AccessIds, requestData.AccessId) {
-		c.IndentedJSON(http.StatusOK, "Allowed")
-	} else {
-		c.IndentedJSON(http.StatusForbidden, "Denied")
+	for cur.Next(context.TODO()) {
+		var elem schemas.Access
+		err := cur.Decode(&elem)
+		if err != nil {
+			log.Fatal(err)
+		}
+		res = append(res, elem)
+	}
+
+	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), bson.D{{Key: "ownerid", Value: usrid}})
+	if err == mongo.ErrNoDocuments {
+		c.IndentedJSON(http.StatusInternalServerError, "Error")
+	}
+
+	for cur.Next(context.TODO()) {
+		var elem schemas.Box
+		err := cur.Decode(&elem)
+		if err != nil {
+			log.Fatal(err)
+		}
+		allBoxes = append(allBoxes, elem)
+	}
+
+	var returnArr []struct {
+		ID        primitive.ObjectID `bson:"_id,omitempty"`
+		BoxId     int
+		Latitude  float64
+		Longitude float64
+		OwnerId   string
+		Acceses   string
+	}
+
+	for  v in res{
+
 	}
 
 }
