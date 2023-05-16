@@ -11,11 +11,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func AddUserBox(c *gin.Context) {
+func AddAccess(c *gin.Context) {
 	var requestData struct {
 		UserID     string
 		SmartBoxID string
@@ -76,27 +76,23 @@ func AddUserBox(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "Box successfully inserted!"})
 }
 
-func RemoveBox(c *gin.Context) {
-	var boxid = c.Param("id")
-	boxIdInt, _ := strconv.Atoi(boxid)
-
-	res, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").DeleteOne(context.TODO(), bson.D{{Key: "boxid", Value: boxIdInt}})
-	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, "Error while deleting this box")
+func RewokeAccess(c *gin.Context) {
+	var requestData struct {
+		UserID   string
+		AccessId string
 	}
 
-	fmt.Print(res.DeletedCount)
-	c.IndentedJSON(http.StatusOK, "successfully deleted")
-}
+	if err := c.BindJSON(&requestData); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-func ClearBoxOwner(c *gin.Context) {
-	boxid := c.Param("id")
-	boxIdInt, _ := strconv.Atoi(boxid)
+	str, _ := primitive.ObjectIDFromHex(requestData.UserID)
 
-	filter := bson.D{{Key: "boxid", Value: boxIdInt}}
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "ownerid", Value: ""}}}}
+	var res schemas.Access
+	error := utils.CheckBase().Database("PametniPaketnik").Collection("access").FindOne(context.Background(), bson.M{"ownerid": str}).Decode(&res)
 
-	res, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(context.TODO(), filter, update)
+	res, err := utils.CheckBase().Database("PametniPaketnik").Collection("access").UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Error while clearing the owner of this box"})
 		return
@@ -110,26 +106,31 @@ func ClearBoxOwner(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "Owner of the box successfully cleared"})
 }
 
-func GetUserBoxes(c *gin.Context) {
-	var allBoxes []schemas.Box
-	var usrid = c.Param("id")
-
-	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), bson.D{{Key: "ownerid", Value: usrid}})
-	if err == mongo.ErrNoDocuments {
-		c.IndentedJSON(http.StatusInternalServerError, "Error")
+func CheckAccess(c *gin.Context) {
+	var requestData struct {
+		UserID   string
+		AccessId string
 	}
 
-	for cur.Next(context.TODO()) {
-		var elem schemas.Box
-		err := cur.Decode(&elem)
-		if err != nil {
-			log.Fatal(err)
-		}
-		allBoxes = append(allBoxes, elem)
+	if err := c.BindJSON(&requestData); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
-	if len(allBoxes) == 0 {
-		c.IndentedJSON(http.StatusBadRequest, "Error")
+	str, _ := primitive.ObjectIDFromHex(requestData.UserID)
+
+	var res schemas.Access
+	error := utils.CheckBase().Database("PametniPaketnik").Collection("access").FindOne(context.Background(), bson.M{"ownerid": str}).Decode(&res)
+
+	if error != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": error.Error()})
+		return
 	}
-	c.IndentedJSON(http.StatusOK, allBoxes)
+
+	if utils.GetMatch(requestData.AccessId) {
+		c.IndentedJSON(http.StatusOK, "Allowed")
+	} else {
+		c.IndentedJSON(http.StatusForbidden, "Denied")
+	}
+
 }

@@ -2,6 +2,8 @@ package utils
 
 import (
 	"crypto/sha256"
+	"fmt"
+	"regexp"
 	"time"
 )
 
@@ -16,4 +18,18 @@ func Hash(str string) string {
 func GetCurrentTimestamp() int {
 	var date = time.Now().Unix()
 	return int(date)
+}
+
+func GetMatch(acc string, str string) bool {
+	regexPattern := fmt.Sprintf(`\b%s\b`, regexp.QuoteMeta(str))
+	re := regexp.MustCompile(regexPattern)
+	match := re.MatchString(acc)
+	return match
+}
+
+func RewokeAccess(acc string, str string) string {
+	regexPattern := fmt.Sprintf(`\b%s\b`, regexp.QuoteMeta(str))
+	re := regexp.MustCompile(regexPattern)
+	replacedStr := re.ReplaceAllString(acc, "")
+	return replacedStr
 }
