@@ -176,7 +176,7 @@ func GetAllAccess(c *gin.Context) {
 		res = append(res, elem)
 	}
 
-	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), bson.D{{Key: "ownerid", Value: usrid}})
+	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), bson.D{{Key: "ownerid", Value: requestData.UserID}})
 	if err == mongo.ErrNoDocuments {
 		c.IndentedJSON(http.StatusInternalServerError, "Error")
 	}
@@ -190,17 +190,17 @@ func GetAllAccess(c *gin.Context) {
 		allBoxes = append(allBoxes, elem)
 	}
 
-	var returnArr []struct {
+	/*var returnArr []struct {
 		ID        primitive.ObjectID `bson:"_id,omitempty"`
 		BoxId     int
 		Latitude  float64
 		Longitude float64
 		OwnerId   string
 		Acceses   string
-	}
+	}*/
 
-	for  v in res{
+	/*for  v in res{
 
-	}
+	}*/
 
 }
