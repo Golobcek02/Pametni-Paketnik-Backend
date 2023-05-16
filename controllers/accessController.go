@@ -41,7 +41,7 @@ func AddAccess(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "AccessSuccesfully added!"})
 }
 
-func RewokeAccess(c *gin.Context) {
+func RevokeAccess(c *gin.Context) {
 	var requestData struct {
 		UserID   string
 		AccessId string
