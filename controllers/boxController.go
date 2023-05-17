@@ -114,7 +114,8 @@ func ClearBoxOwner(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "Owner of the box successfully cleared"})
 }
 
-func GetUserBoxes(c *gin.Context) {
+// preimenuj v get user boxes and acesses, naredi dodatno da samo boxe vrne
+func GetUserBoxesAndAccesses(c *gin.Context) {
 	var allBoxes []schemas.Box
 	var usrid = c.Param("id")
 	str, _ := primitive.ObjectIDFromHex(usrid)
@@ -155,5 +156,35 @@ func GetUserBoxes(c *gin.Context) {
 		c.IndentedJSON(http.StatusBadRequest, "Error")
 	}
 	obj := bson.M{"allBoxes": allBoxes, "usernames": usernames}
+	c.IndentedJSON(http.StatusOK, obj)
+}
+
+func GetUserBoxes(c *gin.Context) {
+	var allBoxes []schemas.Box
+	var usrid = c.Param("id")
+	str, _ := primitive.ObjectIDFromHex(usrid)
+
+	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), bson.D{{Key: "ownerid", Value: str}})
+	if err == mongo.ErrNoDocuments {
+		c.IndentedJSON(http.StatusInternalServerError, "Error")
+	}
+
+	for cur.Next(context.TODO()) {
+		var elem schemas.Box
+		err := cur.Decode(&elem)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Ignore the AccessIds for this request
+		elem.AccessIds = nil
+
+		allBoxes = append(allBoxes, elem)
+	}
+
+	if len(allBoxes) == 0 {
+		c.IndentedJSON(http.StatusBadRequest, "Error")
+	}
+	obj := bson.M{"allBoxes": allBoxes}
 	c.IndentedJSON(http.StatusOK, obj)
 }
