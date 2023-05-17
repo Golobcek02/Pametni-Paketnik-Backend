@@ -6,52 +6,63 @@ import (
 	"context"
 	"fmt"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func GetUserEntries(c *gin.Context) {
-	var allOpenings []schemas.Entry
-	var boxids []int
-	var tid = c.Param("id")
-
-	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), bson.D{{Key: "ownerid", Value: tid}})
-	if err == mongo.ErrNoDocuments {
-		c.IndentedJSON(http.StatusNotFound, allOpenings)
+	userId := c.Param("id")
+	objectId, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
 	}
 
-	for cur.Next(context.TODO()) {
-		var elem schemas.Box
-		err := cur.Decode(&elem)
-		if err != nil {
-			log.Fatal(err)
+	var boxes []schemas.Box
+	boxIds := []int{}
+	boxFilter := bson.M{"ownerid": objectId}
+	boxCursor, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), boxFilter)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find boxes"})
+		return
+	}
+	for boxCursor.Next(context.Background()) {
+		var box schemas.Box
+		if err := boxCursor.Decode(&box); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode box"})
+			return
 		}
-		boxids = append(boxids, elem.BoxId)
+		boxes = append(boxes, box)
+		boxIds = append(boxIds, box.BoxId)
+	}
+	if err := boxCursor.Err(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to iterate over boxes"})
+		return
 	}
 
-	if len(boxids) == 0 {
-		c.IndentedJSON(http.StatusOK, allOpenings)
+	var entries []schemas.Entry
+	entryFilter := bson.M{"boxid": bson.M{"$in": boxIds}}
+	entryCursor, err := utils.CheckBase().Database("PametniPaketnik").Collection("entries").Find(context.TODO(), entryFilter)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find entries"})
+		return
 	}
-
-	cur, error := utils.CheckBase().Database("PametniPaketnik").Collection("entries").Find(context.TODO(), bson.D{{Key: "boxid", Value: bson.D{{Key: "$in", Value: boxids}}}})
-	if error != nil {
-		panic(error)
-	}
-
-	for cur.Next(context.TODO()) {
-		var elem schemas.Entry
-		err := cur.Decode(&elem)
-		if err != nil {
-			log.Fatal(err)
+	for entryCursor.Next(context.Background()) {
+		var entry schemas.Entry
+		if err := entryCursor.Decode(&entry); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode entry"})
+			return
 		}
-		allOpenings = append(allOpenings, elem)
+		entries = append(entries, entry)
+	}
+	if err := entryCursor.Err(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to iterate over entries"})
+		return
 	}
 
-	c.IndentedJSON(http.StatusOK, allOpenings)
+	c.JSON(http.StatusOK, entries)
 }
 
 func InsertNewEntry(c *gin.Context) {
