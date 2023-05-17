@@ -100,7 +100,7 @@ func RewokeAccess(c *gin.Context) {
 		}
 
 		res.AccessIds = ret
-		_, e := utils.CheckBase().Database("PametniPaketnik").Collection("access").UpdateOne(
+		_, e := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(
 			context.Background(),
 			bson.M{"ownerid": str},
 			bson.M{"$set": res},
