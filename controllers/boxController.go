@@ -11,6 +11,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -43,7 +44,7 @@ func AddUserBox(c *gin.Context) {
 		}
 
 		tmp, _ := strconv.Atoi(requestData.SmartBoxID)
-		if elem.BoxId == tmp && elem.OwnerId == "" {
+		if elem.BoxId == tmp && elem.OwnerId.Hex() == "" {
 			_, error := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(context.Background(),
 				bson.D{{Key: "boxid", Value: elem.BoxId}},
 				bson.D{{Key: "$set", Value: bson.D{
@@ -61,12 +62,15 @@ func AddUserBox(c *gin.Context) {
 			return
 		}
 	}
+	str, _ := primitive.ObjectIDFromHex(requestData.UserID)
 
 	var box schemas.Box
+	var temp []primitive.ObjectID
 	box.BoxId, _ = strconv.Atoi(requestData.SmartBoxID)
 	box.Latitude = requestData.Lat
 	box.Longitude = requestData.Lon
-	box.OwnerId = requestData.UserID
+	box.OwnerId = str
+	box.AccessIds = temp
 	fmt.Println(box)
 
 	result, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").InsertOne(context.Background(), box)
@@ -113,8 +117,9 @@ func ClearBoxOwner(c *gin.Context) {
 func GetUserBoxes(c *gin.Context) {
 	var allBoxes []schemas.Box
 	var usrid = c.Param("id")
+	str, _ := primitive.ObjectIDFromHex(usrid)
 
-	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), bson.D{{Key: "ownerid", Value: usrid}})
+	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), bson.D{{Key: "ownerid", Value: str}})
 	if err == mongo.ErrNoDocuments {
 		c.IndentedJSON(http.StatusInternalServerError, "Error")
 	}

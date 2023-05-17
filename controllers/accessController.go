@@ -37,7 +37,7 @@ func AddAccess(c *gin.Context) {
 		return
 	}
 
-	if res.OwnerId == requestData.UserID {
+	if res.OwnerId == str {
 		var r schemas.User
 		error := utils.CheckBase().Database("PametniPaketnik").Collection("users").FindOne(context.TODO(), bson.D{{Key: "username", Value: requestData.AccessId}}).Decode(&r)
 		if error != nil {
@@ -45,22 +45,11 @@ func AddAccess(c *gin.Context) {
 			return
 		}
 
-		// Perform an aggregation to find the document you want to update and concatenate the `accessids` field with the new string
-		var usrAccesses schemas.Access
-		err := utils.CheckBase().Database("PametniPaketnik").Collection("access").FindOne(context.Background(), bson.D{{Key: "ownerid", Value: str}}).Decode(&usrAccesses)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		var access schemas.Access
-		access.OwnerId = str
-		access.BoxId = requestData.BoxId
-		access.AccessIds = usrAccesses.AccessIds
-		access.AccessIds = append(access.AccessIds, r.ID)
+		res.AccessIds = append(res.AccessIds, r.ID)
 		_, e := utils.CheckBase().Database("PametniPaketnik").Collection("access").UpdateOne(
 			context.Background(),
 			bson.M{"ownerid": str},
-			bson.M{"$set": access},
+			bson.M{"$set": res},
 			options.Update().SetUpsert(true),
 		)
 		fmt.Println(e)
@@ -95,28 +84,30 @@ func RewokeAccess(c *gin.Context) {
 		return
 	}
 
-	if res.OwnerId == requestData.UserID {
+	if res.OwnerId == str {
 		var r schemas.User
-		error := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").FindOne(context.TODO(), bson.D{{Key: "boxid", Value: requestData.BoxId}}).Decode(&r)
+		error := utils.CheckBase().Database("PametniPaketnik").Collection("users").FindOne(context.TODO(), bson.D{{Key: "username", Value: requestData.AccessId}}).Decode(&r)
 		if error != nil {
 			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Error"})
 			return
 		}
 
+		var ret []primitive.ObjectID
+		for _, v := range res.AccessIds {
+			if v != r.ID {
+				ret = append(ret, v)
+			}
+		}
+
+		res.AccessIds = ret
 		_, e := utils.CheckBase().Database("PametniPaketnik").Collection("access").UpdateOne(
 			context.Background(),
 			bson.M{"ownerid": str},
-			bson.D{
-				{Key: "$set", Value: bson.D{
-					{Key: "ownerid", Value: str},
-					{Key: "accessids", Value: bson.D{{Key: "$regexReplace", Value: bson.M{"input": "$accessids", "find": requestData.AccessId, "replacement": "", "options": "i"}}}},
-					{Key: "boxid", Value: requestData.BoxId},
-				}},
-			},
+			bson.M{"$set": res},
 			options.Update().SetUpsert(true),
 		)
 		fmt.Println(e)
-		c.IndentedJSON(http.StatusOK, "Revoked!")
+		c.IndentedJSON(http.StatusOK, "Removed!")
 		return
 
 	} else {
@@ -136,53 +127,15 @@ func CheckAccess(c *gin.Context) {
 		return
 	}
 
-	var res schemas.Access
-	error := utils.CheckBase().Database("PametniPaketnik").Collection("access").FindOne(context.Background(), bson.M{"boxid": requestData.BoxId}).Decode(&res)
-
+	var r schemas.User
+	error := utils.CheckBase().Database("PametniPaketnik").Collection("users").FindOne(context.TODO(), bson.D{{Key: "username", Value: requestData.UserID}}).Decode(&r)
 	if error != nil {
-		c.IndentedJSON(http.StatusForbidden, "You have no accesses")
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Error"})
 		return
 	}
 
-	/*if utils.GetMatch(res.AccessIds, requestData.UserID) {
-		c.IndentedJSON(http.StatusOK, "Allowed")
-	} else {
-		c.IndentedJSON(http.StatusForbidden, "Denied")
-	}*/
-
-}
-
-func GetAllAccess(c *gin.Context) {
-	var requestData struct {
-		UserID string
-		BoxId  string
-	}
-
-	if err := c.BindJSON(&requestData); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	str, _ := primitive.ObjectIDFromHex(requestData.UserID)
-
-	var res []schemas.Access
 	var allBoxes []schemas.Box
-	cur, error := utils.CheckBase().Database("PametniPaketnik").Collection("access").Find(context.Background(), bson.M{"ownerid": str})
-	if error != nil {
-		c.IndentedJSON(http.StatusInternalServerError, "Error")
-		return
-	}
-
-	for cur.Next(context.TODO()) {
-		var elem schemas.Access
-		err := cur.Decode(&elem)
-		if err != nil {
-			log.Fatal(err)
-		}
-		res = append(res, elem)
-	}
-
-	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), bson.D{{Key: "ownerid", Value: requestData.UserID}})
+	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), bson.D{{}})
 	if err == mongo.ErrNoDocuments {
 		c.IndentedJSON(http.StatusInternalServerError, "Error")
 	}
@@ -196,17 +149,14 @@ func GetAllAccess(c *gin.Context) {
 		allBoxes = append(allBoxes, elem)
 	}
 
-	/*var returnArr []struct {
-		ID        primitive.ObjectID `bson:"_id,omitempty"`
-		BoxId     int
-		Latitude  float64
-		Longitude float64
-		OwnerId   string
-		Acceses   string
-	}*/
-
-	/*for  v in res{
-
-	}*/
-
+	for _, v := range allBoxes {
+		for _, z := range v.AccessIds {
+			if z == r.ID {
+				c.IndentedJSON(http.StatusOK, "Autorised!")
+				return
+			}
+		}
+	}
+	c.IndentedJSON(http.StatusNotFound, "Error")
+	return
 }
