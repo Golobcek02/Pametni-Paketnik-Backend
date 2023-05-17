@@ -62,7 +62,7 @@ func AddAccess(c *gin.Context) {
 	}
 }
 
-func RewokeAccess(c *gin.Context) {
+func RevokeAccess(c *gin.Context) {
 	var requestData struct {
 		UserID   string
 		AccessId string

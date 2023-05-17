@@ -17,4 +17,5 @@ func Router(Router *gin.Engine) {
 	Router.GET("/getUserBoxes/:id", controllers.GetUserBoxes)
 	Router.PUT("/clearBox/:id", controllers.ClearBoxOwner)
 	Router.POST("/addAccessToUser", controllers.AddAccess)
+	Router.POST("/revokeUserAccess", controllers.RevokeAccess)
 }
