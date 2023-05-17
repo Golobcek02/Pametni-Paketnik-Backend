@@ -5,10 +5,11 @@ import (
 	"backend/utils"
 	"context"
 	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"net/http"
 )
 
 func LogIn(c *gin.Context) {
@@ -44,9 +45,9 @@ func Register(c *gin.Context) {
 		result, err := utils.CheckBase().Database("PametniPaketnik").Collection("users").InsertOne(context.TODO(), registerUser)
 		fmt.Println(err)
 		fmt.Println(result.InsertedID)
-		c.IndentedJSON(http.StatusOK, "Proceede")
+		c.IndentedJSON(http.StatusOK, bson.M{"res": "Proceede"})
 		return
 	}
 
-	c.IndentedJSON(http.StatusBadRequest, "Denied")
+	c.IndentedJSON(http.StatusBadRequest, bson.M{"res": "Denied"})
 }

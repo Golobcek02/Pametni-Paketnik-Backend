@@ -7,5 +7,6 @@ type Box struct {
 	BoxId     int
 	Latitude  float64
 	Longitude float64
-	OwnerId   string
+	OwnerId   primitive.ObjectID
+	AccessIds []primitive.ObjectID
 }
