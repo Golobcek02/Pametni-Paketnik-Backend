@@ -50,8 +50,6 @@ func AddAccess(c *gin.Context) {
 		err := utils.CheckBase().Database("PametniPaketnik").Collection("access").FindOne(context.Background(), bson.D{{Key: "ownerid", Value: str}}).Decode(&usrAccesses)
 		if err != nil {
 			fmt.Println(err)
-			c.IndentedJSON(http.StatusBadRequest, "Error")
-			return
 		}
 
 		var access schemas.Access
