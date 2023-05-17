@@ -46,39 +46,23 @@ func AddAccess(c *gin.Context) {
 		}
 
 		// Perform an aggregation to find the document you want to update and concatenate the `accessids` field with the new string
-		cursor, err := utils.CheckBase().Database("PametniPaketnik").Collection("access").Aggregate(context.Background(), mongo.Pipeline{
-			bson.D{{Key: "$match", Value: bson.M{"ownerid": str}}},
-			bson.D{{Key: "$addFields", Value: bson.M{
-				"accessids": bson.D{{Key: "$concat", Value: bson.A{"$accessids", " ", r.ID.String()}}},
-			}}},
-		})
+		var usrAccesses schemas.Access
+		err := utils.CheckBase().Database("PametniPaketnik").Collection("access").FindOne(context.Background(), bson.D{{"ownerid", str}}).Decode(&usrAccesses)
 		if err != nil {
 			fmt.Println(err)
 			c.IndentedJSON(http.StatusBadRequest, "Error")
 			return
 		}
 
-		// Get the result from the aggregation
-		var result bson.M
-		if cursor.Next(context.Background()) {
-			if err := cursor.Decode(&result); err != nil {
-				log.Fatal(err)
-			}
-		} else {
-			c.IndentedJSON(http.StatusBadRequest, "Error")
-			return
-		}
-
+		var access schemas.Access
+		access.OwnerId = str
+		access.BoxId = requestData.BoxId
+		access.AccessIds = usrAccesses.AccessIds
+		access.AccessIds = append(access.AccessIds, r.ID)
 		_, e := utils.CheckBase().Database("PametniPaketnik").Collection("access").UpdateOne(
 			context.Background(),
 			bson.M{"ownerid": str},
-			bson.D{
-				{Key: "$set", Value: bson.M{
-					"ownerid":   str,
-					"accessids": result["accessids"],
-					"boxid":     requestData.BoxId,
-				}},
-			},
+			access,
 			options.Update().SetUpsert(true),
 		)
 		fmt.Println(e)
@@ -162,11 +146,11 @@ func CheckAccess(c *gin.Context) {
 		return
 	}
 
-	if utils.GetMatch(res.AccessIds, requestData.UserID) {
+	/*if utils.GetMatch(res.AccessIds, requestData.UserID) {
 		c.IndentedJSON(http.StatusOK, "Allowed")
 	} else {
 		c.IndentedJSON(http.StatusForbidden, "Denied")
-	}
+	}*/
 
 }
 
