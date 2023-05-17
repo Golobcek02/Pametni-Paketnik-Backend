@@ -38,21 +38,36 @@ func AddAccess(c *gin.Context) {
 	}
 
 	if res.OwnerId == requestData.UserID {
-		var r schemas.User
-		error := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").FindOne(context.TODO(), bson.D{{Key: "boxid", Value: requestData.BoxId}}).Decode(&r)
-		if error != nil {
-			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Error"})
-			return
+
+		// Perform an aggregation to find the document you want to update and concatenate the `accessids` field with the new string
+		cursor, err := utils.CheckBase().Database("PametniPaketnik").Collection("access").Aggregate(context.Background(), mongo.Pipeline{
+			bson.D{{Key: "$match", Value: bson.M{"ownerid": str}}},
+			bson.D{{Key: "$addFields", Value: bson.M{
+				"accessids": bson.D{{Key: "$concat", Value: bson.A{"$accessids", " ", requestData.AccessId}}},
+			}}},
+		})
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Get the result from the aggregation
+		var result bson.M
+		if cursor.Next(context.Background()) {
+			if err := cursor.Decode(&result); err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			log.Fatal("No document found")
 		}
 
 		_, e := utils.CheckBase().Database("PametniPaketnik").Collection("access").UpdateOne(
 			context.Background(),
 			bson.M{"ownerid": str},
 			bson.D{
-				{Key: "$set", Value: bson.D{
-					{Key: "ownerid", Value: str},
-					{Key: "accessids", Value: bson.D{{Key: "$concat", Value: bson.D{{Key: "$accessids", Value: " " + r.ID.String()}}}}},
-					{Key: "boxid", Value: requestData.BoxId},
+				{Key: "$set", Value: bson.M{
+					"ownerid":   str,
+					"accessids": result["accessids"],
+					"boxid":     requestData.BoxId,
 				}},
 			},
 			options.Update().SetUpsert(true),
