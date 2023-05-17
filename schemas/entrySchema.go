@@ -10,4 +10,5 @@ type Entry struct {
 	Longitude    float64
 	TimeAccessed uint64
 	OpenerId     string
+	EntryType    string
 }
