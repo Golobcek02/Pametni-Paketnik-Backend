@@ -124,17 +124,36 @@ func GetUserBoxes(c *gin.Context) {
 		c.IndentedJSON(http.StatusInternalServerError, "Error")
 	}
 
+	var usernames [][]string
 	for cur.Next(context.TODO()) {
 		var elem schemas.Box
 		err := cur.Decode(&elem)
 		if err != nil {
 			log.Fatal(err)
 		}
+		if len(elem.AccessIds) > 0 {
+			var boxUsernames []string
+			for _, id := range elem.AccessIds {
+				user := schemas.User{}
+				err := utils.CheckBase().Database("PametniPaketnik").Collection("users").FindOne(context.TODO(), bson.M{"_id": id}).Decode(&user)
+				if err == mongo.ErrNoDocuments {
+					continue // user not found, skip to next id
+				} else if err != nil {
+					log.Fatal(err)
+				}
+				boxUsernames = append(boxUsernames, user.Username)
+			}
+			usernames = append(usernames, boxUsernames)
+		} else {
+			usernames = append(usernames, []string{})
+		}
+
 		allBoxes = append(allBoxes, elem)
 	}
 
 	if len(allBoxes) == 0 {
 		c.IndentedJSON(http.StatusBadRequest, "Error")
 	}
-	c.IndentedJSON(http.StatusOK, allBoxes)
+	obj := bson.M{"allBoxes": allBoxes, "usernames": usernames}
+	c.IndentedJSON(http.StatusOK, obj)
 }
