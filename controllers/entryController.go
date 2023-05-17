@@ -55,14 +55,14 @@ func GetUserEntries(c *gin.Context) {
 }
 
 func InsertNewEntry(c *gin.Context) {
-	var newOpening schemas.Entry
+	var newEntry schemas.Entry
 
-	if err := c.BindJSON(&newOpening); err != nil {
+	if err := c.BindJSON(&newEntry); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	result, err := utils.CheckBase().Database("PametniPaketnik").Collection("entries").InsertOne(context.TODO(), newOpening)
+	result, err := utils.CheckBase().Database("PametniPaketnik").Collection("entries").InsertOne(context.TODO(), newEntry)
 	if err != nil {
 		c.IndentedJSON(http.StatusConflict, err)
 	}
