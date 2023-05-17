@@ -48,7 +48,7 @@ func AddAccess(c *gin.Context) {
 		res.AccessIds = append(res.AccessIds, r.ID)
 		_, e := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(
 			context.Background(),
-			bson.M{"ownerid": str},
+			bson.M{"boxid": requestData.BoxId},
 			bson.M{"$set": res},
 			options.Update().SetUpsert(true),
 		)
@@ -102,7 +102,7 @@ func RevokeAccess(c *gin.Context) {
 		res.AccessIds = ret
 		_, e := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(
 			context.Background(),
-			bson.M{"ownerid": str},
+			bson.M{"boxid": requestData.BoxId},
 			bson.M{"$set": res},
 			options.Update().SetUpsert(true),
 		)
