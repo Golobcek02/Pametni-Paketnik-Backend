@@ -38,16 +38,24 @@ func AddAccess(c *gin.Context) {
 	}
 
 	if res.OwnerId == requestData.UserID {
+		var r schemas.User
+		error := utils.CheckBase().Database("PametniPaketnik").Collection("users").FindOne(context.TODO(), bson.D{{Key: "username", Value: requestData.AccessId}}).Decode(&r)
+		if error != nil {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Error"})
+			return
+		}
 
 		// Perform an aggregation to find the document you want to update and concatenate the `accessids` field with the new string
 		cursor, err := utils.CheckBase().Database("PametniPaketnik").Collection("access").Aggregate(context.Background(), mongo.Pipeline{
 			bson.D{{Key: "$match", Value: bson.M{"ownerid": str}}},
 			bson.D{{Key: "$addFields", Value: bson.M{
-				"accessids": bson.D{{Key: "$concat", Value: bson.A{"$accessids", " ", requestData.AccessId}}},
+				"accessids": bson.D{{Key: "$concat", Value: bson.A{"$accessids", " ", r.ID.String()}}},
 			}}},
 		})
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			c.IndentedJSON(http.StatusBadRequest, "Error")
+			return
 		}
 
 		// Get the result from the aggregation
@@ -57,7 +65,8 @@ func AddAccess(c *gin.Context) {
 				log.Fatal(err)
 			}
 		} else {
-			log.Fatal("No document found")
+			c.IndentedJSON(http.StatusBadRequest, "Error")
+			return
 		}
 
 		_, e := utils.CheckBase().Database("PametniPaketnik").Collection("access").UpdateOne(
