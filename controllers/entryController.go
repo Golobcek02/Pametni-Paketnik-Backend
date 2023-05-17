@@ -65,6 +65,7 @@ func InsertNewEntry(c *gin.Context) {
 	result, err := utils.CheckBase().Database("PametniPaketnik").Collection("entries").InsertOne(context.TODO(), newEntry)
 	if err != nil {
 		c.IndentedJSON(http.StatusConflict, err)
+		return
 	}
 	fmt.Println(err)
 	fmt.Println(result.InsertedID)

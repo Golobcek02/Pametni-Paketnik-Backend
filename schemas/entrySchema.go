@@ -9,6 +9,6 @@ type Entry struct {
 	Latitude     float64
 	Longitude    float64
 	TimeAccessed uint64
-	OpenerId     string
+	LoggerId     primitive.ObjectID
 	EntryType    string
 }
