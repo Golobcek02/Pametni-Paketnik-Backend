@@ -20,4 +20,5 @@ func Router(Router *gin.Engine) {
 	Router.POST("/addAccessToUser", controllers.AddAccess)
 	Router.POST("/revokeAccessToUser", controllers.RevokeAccess)
 	Router.POST("/checkAccessOfUser", controllers.CheckAccess)
+	Router.POST("/addPackageRoute", controllers.InsertPackageRoutes)
 }
