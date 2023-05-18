@@ -62,3 +62,32 @@ func UpdateOrderRoute(c *gin.Context) {
 
 	c.JSON(http.StatusOK, result.ModifiedCount)
 }
+
+func PopFirstStop(c *gin.Context) {
+	idStr := c.Param("id")
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+
+	filter := bson.M{"boxid": id}
+	update := bson.M{"$pop": bson.M{"packageroute.stops": -1}} // Use -1 to pop the first element
+
+	_, err = utils.CheckBase().Database("PametniPaketnik").Collection("orders").UpdateOne(
+		context.TODO(),
+		filter,
+		update,
+	)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update order"})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "success"})
+}
