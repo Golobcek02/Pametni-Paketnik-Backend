@@ -22,4 +22,6 @@ func Router(Router *gin.Engine) {
 	Router.POST("/checkAccessOfUser", controllers.CheckAccess)
 	Router.POST("/addPackageRoute", controllers.InsertPackageRoutes)
 	Router.POST("/addOrder", controllers.InsertOrder)
+	Router.GET("/getUserOrders/:id", controllers.GetUserOrders)
+	Router.POST("/updateOrderRoute/:BoxID", controllers.UpdateOrderRoute)
 }
