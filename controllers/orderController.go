@@ -19,8 +19,6 @@ func InsertOrder(c *gin.Context) {
 		return
 	}
 
-	//order.ID = primitive.NewObjectID()
-
 	// Insert the order into the database
 	insertResult, err := utils.CheckBase().Database("PametniPaketnik").Collection("orders").InsertOne(context.TODO(), order)
 	if err != nil {
@@ -50,7 +48,6 @@ func GetUserOrders(c *gin.Context) {
 			return
 		}
 
-		// Ignore the AccessIds for this request
 		elem.AccessIds = nil
 
 		allBoxes = append(allBoxes, elem)
@@ -61,13 +58,11 @@ func GetUserOrders(c *gin.Context) {
 		return
 	}
 
-	// Get the box IDs from the retrieved boxes
 	boxIDs := make([]int, len(allBoxes))
 	for i, box := range allBoxes {
 		boxIDs[i] = box.BoxId
 	}
 
-	// Query the orders collection to find orders with matching box IDs
 	ordersCur, err := utils.CheckBase().Database("PametniPaketnik").Collection("orders").Find(context.TODO(), bson.M{
 		"boxid": bson.M{"$in": boxIDs},
 	})

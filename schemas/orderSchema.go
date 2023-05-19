@@ -7,4 +7,7 @@ type Order struct {
 	BoxID        int
 	Status       string
 	PackageRoute PackageRoutes
+	PageUrl      string
+	DeliveryTime string
+	Items        []string
 }
