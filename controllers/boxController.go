@@ -46,6 +46,14 @@ func AddUserBox(c *gin.Context) {
 		}
 
 		tmp, _ := strconv.Atoi(requestData.SmartBoxID)
+		if elem.BoxId == tmp && elem.OwnerId != emptyId && elem.OwnerId != str {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Someone already own this box"})
+			return
+		}
+		if elem.BoxId == tmp && elem.OwnerId == str {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Someone already own this box"})
+			return
+		}
 		if elem.BoxId == tmp && elem.OwnerId == emptyId {
 			_, error := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(context.Background(),
 				bson.D{{Key: "boxid", Value: elem.BoxId}},
