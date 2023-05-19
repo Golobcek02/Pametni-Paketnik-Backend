@@ -36,6 +36,7 @@ func AddUserBox(c *gin.Context) {
 		return
 	}
 
+	str, _ := primitive.ObjectIDFromHex(requestData.UserID)
 	for cur.Next(context.TODO()) {
 		var elem schemas.Box
 		err := cur.Decode(&elem)
@@ -48,7 +49,7 @@ func AddUserBox(c *gin.Context) {
 			_, error := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(context.Background(),
 				bson.D{{Key: "boxid", Value: elem.BoxId}},
 				bson.D{{Key: "$set", Value: bson.D{
-					{Key: "ownerid", Value: requestData.UserID},
+					{Key: "ownerid", Value: str},
 					{Key: "latitude", Value: requestData.Lat},
 					{Key: "longitude", Value: requestData.Lon},
 				}}},
@@ -62,7 +63,7 @@ func AddUserBox(c *gin.Context) {
 			return
 		}
 	}
-	str, _ := primitive.ObjectIDFromHex(requestData.UserID)
+	//str, _ := primitive.ObjectIDFromHex(requestData.UserID)
 
 	var box schemas.Box
 	var temp []primitive.ObjectID
