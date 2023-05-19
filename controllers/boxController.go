@@ -37,6 +37,7 @@ func AddUserBox(c *gin.Context) {
 	}
 
 	str, _ := primitive.ObjectIDFromHex(requestData.UserID)
+	emptyId, _ := primitive.ObjectIDFromHex("000000000000")
 	for cur.Next(context.TODO()) {
 		var elem schemas.Box
 		err := cur.Decode(&elem)
@@ -45,7 +46,7 @@ func AddUserBox(c *gin.Context) {
 		}
 
 		tmp, _ := strconv.Atoi(requestData.SmartBoxID)
-		if elem.BoxId == tmp && elem.OwnerId.Hex() == "" {
+		if elem.BoxId == tmp && elem.OwnerId == emptyId {
 			_, error := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(context.Background(),
 				bson.D{{Key: "boxid", Value: elem.BoxId}},
 				bson.D{{Key: "$set", Value: bson.D{
@@ -97,9 +98,9 @@ func RemoveBox(c *gin.Context) {
 func ClearBoxOwner(c *gin.Context) {
 	boxid := c.Param("id")
 	boxIdInt, _ := strconv.Atoi(boxid)
-
+	noOwner, _ := primitive.ObjectIDFromHex("000000000000")
 	filter := bson.D{{Key: "boxid", Value: boxIdInt}}
-	update := bson.D{{Key: "$set", Value: bson.D{{Key: "ownerid", Value: ""}}}}
+	update := bson.D{{Key: "$set", Value: bson.D{{Key: "ownerid", Value: noOwner}}}}
 
 	res, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(context.TODO(), filter, update)
 	if err != nil {
