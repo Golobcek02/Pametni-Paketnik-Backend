@@ -23,7 +23,7 @@ func GetUserEntries(c *gin.Context) {
 
 	var boxes []schemas.Box
 	boxIds := []int{}
-	boxFilter := bson.M{"loggerid": objectId}
+	boxFilter := bson.M{"ownerid": objectId}
 	boxCursor, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), boxFilter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find boxes"})
