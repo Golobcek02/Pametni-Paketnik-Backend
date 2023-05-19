@@ -5,8 +5,9 @@ import (
 	"backend/utils"
 	"context"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -22,7 +23,7 @@ func GetUserEntries(c *gin.Context) {
 
 	var boxes []schemas.Box
 	boxIds := []int{}
-	boxFilter := bson.M{"ownerid": objectId}
+	boxFilter := bson.M{"loggerid": objectId}
 	boxCursor, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), boxFilter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find boxes"})
