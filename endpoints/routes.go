@@ -25,4 +25,5 @@ func Router(Router *gin.Engine) {
 	Router.GET("/getUserOrders/:id", controllers.GetUserOrders)
 	Router.POST("/updateOrderRoute/:BoxID", controllers.UpdateOrderRoute)
 	Router.POST("/popFirstStop/:id", controllers.PopFirstStop)
+	Router.POST("/login2fa", controllers.Temp)
 }
