@@ -66,5 +66,5 @@ func Temp(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, true)
+	c.JSON(http.StatusOK, false)
 }
