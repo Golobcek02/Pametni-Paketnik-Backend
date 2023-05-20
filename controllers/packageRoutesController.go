@@ -4,6 +4,7 @@ import (
 	"backend/schemas"
 	"backend/utils"
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -16,14 +17,14 @@ import (
 
 func InsertPackageRoutes(c *gin.Context) {
 	var requestData struct {
-		route string
+		Route string
 	}
 
 	if err := c.BindJSON(&requestData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	BoxIds := strings.Split(requestData.route, "|")
+	BoxIds := strings.Split(requestData.Route, "|")
 
 	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), bson.D{{}})
 	if err == mongo.ErrNoDocuments {
@@ -37,16 +38,7 @@ func InsertPackageRoutes(c *gin.Context) {
 		if err != nil {
 			log.Fatal(err)
 		}
-
-		for _, v := range BoxIds {
-			i, err := strconv.Atoi(v)
-			if err != nil {
-				continue
-			}
-			if i == elem.BoxId {
-				box = append(box, elem)
-			}
-		}
+		box = append(box, elem)
 	}
 
 	curr, e := utils.CheckBase().Database("PametniPaketnik").Collection("orders").Find(context.TODO(), bson.D{{}})
@@ -61,19 +53,12 @@ func InsertPackageRoutes(c *gin.Context) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		for _, v := range BoxIds {
-			i, err := strconv.Atoi(v)
-			if err != nil {
-				continue
-			}
-			if i == elem.BoxID {
-				ord = append(ord, elem)
-			}
-		}
+		ord = append(ord, elem)
 
 	}
 
-	centralStation := strings.Split(requestData.route, ":")
+	centralStation := strings.Split(BoxIds[0], ":")
+	fmt.Println(BoxIds[0])
 	var station schemas.Order
 	station.PageUrl = centralStation[0]
 	station.BoxID = 000
@@ -83,6 +68,8 @@ func InsertPackageRoutes(c *gin.Context) {
 	packageRoute.Stops = append(packageRoute.Stops, centralStation[1])
 	for _, v := range box {
 		for _, z := range ord {
+			fmt.Println("neke")
+
 			if v.BoxId == z.BoxID {
 				lat := strconv.FormatFloat(v.Latitude, 'f', 2, 64)
 				lon := strconv.FormatFloat(v.Longitude, 'f', 2, 64)
