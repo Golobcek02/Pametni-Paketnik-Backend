@@ -4,11 +4,14 @@ import (
 	"backend/schemas"
 	"backend/utils"
 	"context"
+	"log"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"net/http"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func InsertOrder(c *gin.Context) {
@@ -79,4 +82,43 @@ func GetUserOrders(c *gin.Context) {
 
 	obj := bson.M{"orders": orders}
 	c.IndentedJSON(http.StatusOK, obj)
+}
+
+func UpdateOrderStatus(c *gin.Context) {
+
+	var requestData struct {
+		BoxId  string
+		Status string
+	}
+
+	if err := c.BindJSON(&requestData); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var order []schemas.Order
+	curr, err := utils.CheckBase().Database("PametniPaketnik").Collection("orders").Find(context.TODO(), bson.M{"boxid": requestData.BoxId})
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	for curr.Next(context.TODO()) {
+		var elem schemas.Order
+		err := curr.Decode(&elem)
+		if err != nil {
+			log.Fatal(err)
+		}
+		order = append(order, elem)
+	}
+
+	for _, v := range order {
+		_, error := utils.CheckBase().Database("PametniPaketnik").Collection("orders").UpdateOne(context.TODO(), bson.D{{"_id", v.ID}}, bson.D{{"$set", bson.D{{"Status", requestData.Status}}}}, options.Update().SetUpsert(false))
+		if error != nil {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	c.IndentedJSON(http.StatusOK, gin.H{"code": "Success"})
 }

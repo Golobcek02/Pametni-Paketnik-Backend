@@ -6,7 +6,6 @@ type Order struct {
 	ID           primitive.ObjectID `bson:"_id,omitempty"`
 	BoxID        int
 	Status       string
-	PackageRoute PackageRoutes
 	PageUrl      string
 	DeliveryTime string
 	Items        []string
