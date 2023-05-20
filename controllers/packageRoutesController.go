@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -48,33 +49,33 @@ func InsertPackageRoutes(c *gin.Context) {
 
 	var ord []schemas.Order
 	for curr.Next(context.TODO()) {
-		var elem schemas.Order
-		err := cur.Decode(&elem)
+		var element schemas.Order
+		err := curr.Decode(&element)
 		if err != nil {
 			log.Fatal(err)
 		}
-		ord = append(ord, elem)
-
+		ord = append(ord, element)
 	}
 
 	centralStation := strings.Split(BoxIds[0], ":")
-	fmt.Println(BoxIds[0])
-	var station schemas.Order
-	station.PageUrl = centralStation[0]
-	station.BoxID = 000
-
 	var packageRoute schemas.PackageRoutes
-	packageRoute.Orders = append(packageRoute.Orders, station)
+	var zeroObjectID primitive.ObjectID
+	packageRoute.Orders = append(packageRoute.Orders, zeroObjectID)
 	packageRoute.Stops = append(packageRoute.Stops, centralStation[1])
+	var idarr []primitive.ObjectID
+
 	for _, v := range box {
 		for _, z := range ord {
-			fmt.Println("neke")
-
-			if v.BoxId == z.BoxID {
-				lat := strconv.FormatFloat(v.Latitude, 'f', 2, 64)
-				lon := strconv.FormatFloat(v.Longitude, 'f', 2, 64)
-				packageRoute.Orders = append(packageRoute.Orders, z)
-				packageRoute.Stops = append(packageRoute.Stops, lat+", "+lon)
+			for _, g := range BoxIds {
+				i, _ := strconv.Atoi(g)
+				if v.BoxId == z.BoxID && z.Status == "Pending" && i == z.BoxID {
+					fmt.Println("neke")
+					lat := strconv.FormatFloat(v.Latitude, 'f', 2, 64)
+					lon := strconv.FormatFloat(v.Longitude, 'f', 2, 64)
+					packageRoute.Orders = append(packageRoute.Orders, z.ID)
+					packageRoute.Stops = append(packageRoute.Stops, lat+", "+lon)
+					idarr = append(idarr, z.ID)
+				}
 			}
 		}
 	}
@@ -85,6 +86,12 @@ func InsertPackageRoutes(c *gin.Context) {
 		return
 	}
 
+	rs, err := utils.CheckBase().Database("PametniPaketnik").Collection("orders").UpdateMany(context.Background(), bson.M{"_id": bson.M{"$in": idarr}}, bson.M{"$set": bson.M{"status": "In Route"}})
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(rs)
 	c.JSON(http.StatusOK, result.InsertedID)
 }
 
