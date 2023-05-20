@@ -70,8 +70,8 @@ func InsertPackageRoutes(c *gin.Context) {
 				i, _ := strconv.Atoi(g)
 				if v.BoxId == z.BoxID && z.Status == "Pending" && i == z.BoxID {
 					fmt.Println("neke")
-					lat := strconv.FormatFloat(v.Latitude, 'f', 2, 64)
-					lon := strconv.FormatFloat(v.Longitude, 'f', 2, 64)
+					lat := strconv.FormatFloat(v.Latitude, 'f', 8, 64)
+					lon := strconv.FormatFloat(v.Longitude, 'f', 8, 64)
 					packageRoute.Orders = append(packageRoute.Orders, z.ID)
 					packageRoute.Stops = append(packageRoute.Stops, lat+", "+lon)
 					idarr = append(idarr, z.ID)
@@ -133,26 +133,42 @@ func UpdateOrderRoute(c *gin.Context) {
 func PopFirstStop(c *gin.Context) {
 	idStr := c.Param("id")
 
-	id, err := strconv.Atoi(idStr)
+	id, err := primitive.ObjectIDFromHex(idStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
 		return
 	}
 
-	filter := bson.M{"boxid": id}
-	update := bson.M{"$pop": bson.M{"packageroute.stops": -1}} // Use -1 to pop the first element
+	var packageRoute schemas.PackageRoutes
+	err = utils.CheckBase().Database("PametniPaketnik").Collection("packageRoutes").FindOne(context.TODO(), bson.M{"_id": id}).Decode(&packageRoute)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "PackageRoute not found"})
+		return
+	}
 
-	_, err = utils.CheckBase().Database("PametniPaketnik").Collection("orders").UpdateOne(
+	var zeroObjectID primitive.ObjectID
+
+	i := 1
+
+	if packageRoute.Orders[0] == zeroObjectID {
+		packageRoute.Orders = packageRoute.Orders[i:]
+		packageRoute.Stops = packageRoute.Stops[i:]
+	} else {
+		for i < len(packageRoute.Stops) && packageRoute.Stops[0] == packageRoute.Stops[i] {
+			i++
+		}
+
+		packageRoute.Orders = packageRoute.Orders[i:]
+		packageRoute.Stops = packageRoute.Stops[i:]
+	}
+
+	_, err = utils.CheckBase().Database("PametniPaketnik").Collection("packageRoutes").UpdateOne(
 		context.TODO(),
-		filter,
-		update,
+		bson.M{"_id": id},
+		bson.M{"$set": bson.M{"orders": packageRoute.Orders, "stops": packageRoute.Stops}},
 	)
 	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			c.JSON(http.StatusNotFound, gin.H{"error": "Order not found"})
-		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update order"})
-		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update PackageRoute"})
 		return
 	}
 
