@@ -4,11 +4,12 @@ import (
 	"backend/schemas"
 	"backend/utils"
 	"context"
+	"net/http"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"net/http"
-	"strconv"
 )
 
 func InsertPackageRoutes(c *gin.Context) {
@@ -18,7 +19,7 @@ func InsertPackageRoutes(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
+	//t oje vse za spremenit
 	result, err := utils.CheckBase().Database("PametniPaketnik").Collection("packageRoutes").InsertOne(context.TODO(), packageRoutes)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert package routes"})
