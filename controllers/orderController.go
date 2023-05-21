@@ -51,8 +51,6 @@ func GetUserOrders(c *gin.Context) {
 			return
 		}
 
-		elem.AccessIds = nil
-
 		allBoxes = append(allBoxes, elem)
 	}
 
@@ -61,9 +59,9 @@ func GetUserOrders(c *gin.Context) {
 		return
 	}
 
-	boxIDs := make([]int, len(allBoxes))
-	for i, box := range allBoxes {
-		boxIDs[i] = box.BoxId
+	var boxIDs []int
+	for _, box := range allBoxes {
+		boxIDs = append(boxIDs, box.BoxId)
 	}
 
 	ordersCur, err := utils.CheckBase().Database("PametniPaketnik").Collection("orders").Find(context.TODO(), bson.M{
@@ -80,8 +78,24 @@ func GetUserOrders(c *gin.Context) {
 		return
 	}
 
-	obj := bson.M{"orders": orders}
-	c.IndentedJSON(http.StatusOK, obj)
+	var OrderIDs []primitive.ObjectID
+	for _, order := range orders {
+		OrderIDs = append(OrderIDs, order.ID)
+	}
+
+	roureCur, error := utils.CheckBase().Database("PametniPaketnik").Collection("packageRoutes").Find(context.TODO(), bson.M{"orders": bson.M{"$in": OrderIDs}})
+	if error != nil {
+		c.IndentedJSON(http.StatusInternalServerError, "Error")
+		return
+	}
+
+	var routes []schemas.PackageRoutes
+	if err := roureCur.All(context.TODO(), &routes); err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, "Error")
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, routes)
 }
 
 func UpdateOrderStatus(c *gin.Context) {
