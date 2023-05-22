@@ -95,6 +95,71 @@ func GetUserOrders(c *gin.Context) {
 		return
 	}
 
+	c.IndentedJSON(http.StatusOK, orders)
+}
+
+func GetUserOrderRoutes(c *gin.Context) {
+	var allBoxes []schemas.Box
+	var usrid = c.Param("id")
+	str, _ := primitive.ObjectIDFromHex(usrid)
+
+	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), bson.D{{Key: "ownerid", Value: str}})
+	if err == mongo.ErrNoDocuments {
+		c.IndentedJSON(http.StatusInternalServerError, "Error")
+	}
+
+	for cur.Next(context.TODO()) {
+		var elem schemas.Box
+		err := cur.Decode(&elem)
+		if err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, "Error")
+			return
+		}
+
+		allBoxes = append(allBoxes, elem)
+	}
+
+	if len(allBoxes) == 0 {
+		c.IndentedJSON(http.StatusBadRequest, "Error")
+		return
+	}
+
+	var boxIDs []int
+	for _, box := range allBoxes {
+		boxIDs = append(boxIDs, box.BoxId)
+	}
+
+	ordersCur, err := utils.CheckBase().Database("PametniPaketnik").Collection("orders").Find(context.TODO(), bson.M{
+		"boxid": bson.M{"$in": boxIDs},
+	})
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, "Error")
+		return
+	}
+
+	var orders []schemas.Order
+	if err := ordersCur.All(context.TODO(), &orders); err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, "Error")
+		return
+	}
+
+	var OrderIDs []primitive.ObjectID
+	for _, order := range orders {
+		OrderIDs = append(OrderIDs, order.ID)
+	}
+
+	roureCur, error := utils.CheckBase().Database("PametniPaketnik").Collection("packageRoutes").Find(context.TODO(), bson.M{"orders": bson.M{"$in": OrderIDs}})
+	if error != nil {
+		c.IndentedJSON(http.StatusInternalServerError, "Error")
+		return
+	}
+
+	var routes []schemas.PackageRoutes
+	if err := roureCur.All(context.TODO(), &routes); err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, "Error")
+		return
+	}
+
 	c.IndentedJSON(http.StatusOK, routes)
 }
 
