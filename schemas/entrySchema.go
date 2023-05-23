@@ -8,7 +8,7 @@ type Entry struct {
 	BoxId        int
 	Latitude     float64
 	Longitude    float64
-	TimeAccessed string
+	TimeAccessed int64
 	LoggerId     primitive.ObjectID
 	EntryType    string
 }
