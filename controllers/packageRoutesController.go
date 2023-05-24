@@ -194,7 +194,7 @@ func PopFirstStop(c *gin.Context) {
 		packageRoute.Orders = packageRoute.Orders[i:]
 		packageRoute.Stops = packageRoute.Stops[i:]
 
-		rs, _ := utils.CheckBase().Database("PametniPaketnik").Collection("orders").Find(context.Background(), bson.M{"orders": bson.M{"$in": packageRoute.Orders}})
+		rs, _ := utils.CheckBase().Database("PametniPaketnik").Collection("orders").Find(context.Background(), bson.M{"orders": bson.M{"$elemMatch": bson.M{"$in": packageRoute.Orders}}})
 
 		var entries []schemas.Entry
 		for rs.Next(context.TODO()) {
