@@ -194,7 +194,7 @@ func PopFirstStop(c *gin.Context) {
 		packageRoute.Orders = packageRoute.Orders[i:]
 		packageRoute.Stops = packageRoute.Stops[i:]
 
-		rs, _ := utils.CheckBase().Database("PametniPaketnik").Collection("orders").Find(context.Background(), bson.M{"orders": bson.M{"$elemMatch": bson.M{"$in": packageRoute.Orders}}})
+		rs, _ := utils.CheckBase().Database("PametniPaketnik").Collection("orders").Find(context.Background(), bson.M{})
 
 		var entries []schemas.Entry
 		for rs.Next(context.TODO()) {
@@ -203,14 +203,19 @@ func PopFirstStop(c *gin.Context) {
 			if err != nil {
 				log.Fatal(err)
 			}
-			entry.BoxId = element.BoxID
-			entry.DeliveryId = 2
-			entry.EntryType = "oneStopCloser"
-			entry.Latitude = 0
-			entry.Longitude = 0
-			entry.LoggerId = zeroObjectID
-			entry.TimeAccessed = time.Now().Unix()
-			entries = append(entries, entry)
+
+			for _, v := range packageRoute.Orders {
+				if v == element.ID {
+					entry.BoxId = element.BoxID
+					entry.DeliveryId = 2
+					entry.EntryType = "oneStopCloser"
+					entry.Latitude = 0
+					entry.Longitude = 0
+					entry.LoggerId = zeroObjectID
+					entry.TimeAccessed = time.Now().Unix()
+					entries = append(entries, entry)
+				}
+			}
 		}
 
 		var docs []interface{}
