@@ -154,6 +154,43 @@ func PopFirstStop(c *gin.Context) {
 	if packageRoute.Orders[0] == zeroObjectID {
 		packageRoute.Orders = packageRoute.Orders[i:]
 		packageRoute.Stops = packageRoute.Stops[i:]
+		var entry schemas.Entry
+		rs, _ := utils.CheckBase().Database("PametniPaketnik").Collection("orders").Find(context.Background(), bson.M{})
+
+		var entries []schemas.Entry
+		for rs.Next(context.TODO()) {
+			var element schemas.Order
+			err := rs.Decode(&element)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			for _, v := range packageRoute.Orders {
+				if v == element.ID {
+					entry.BoxId = element.BoxID
+					entry.DeliveryId = 2
+					entry.EntryType = "oneStopCloser"
+					entry.Latitude = 0
+					entry.Longitude = 0
+					entry.LoggerId = zeroObjectID
+					entry.TimeAccessed = time.Now().Unix()
+					entries = append(entries, entry)
+				}
+			}
+		}
+
+		var docs []interface{}
+		for _, entry := range entries {
+			docs = append(docs, entry)
+		}
+
+		if len(docs) != 0 {
+			_, err := utils.CheckBase().Database("PametniPaketnik").Collection("entries").InsertMany(context.Background(), docs)
+			if err != nil {
+				panic(err)
+			}
+		}
+
 	} else {
 		for i < len(packageRoute.Stops) && packageRoute.Stops[0] == packageRoute.Stops[i] {
 			i++
@@ -223,7 +260,7 @@ func PopFirstStop(c *gin.Context) {
 			docs = append(docs, entry)
 		}
 
-		if len(docs) == 0 {
+		if len(docs) != 0 {
 			_, err := utils.CheckBase().Database("PametniPaketnik").Collection("entries").InsertMany(context.Background(), docs)
 			if err != nil {
 				panic(err)
@@ -241,7 +278,7 @@ func PopFirstStop(c *gin.Context) {
 		return
 	}
 
-	if len(packageRoute.Stops) == 0 {
+	if len(packageRoute.Stops) != 0 {
 		_, err = utils.CheckBase().Database("PametniPaketnik").Collection("packageRoutes").DeleteOne(context.TODO(), bson.M{"_id": id})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update PackageRoute"})
