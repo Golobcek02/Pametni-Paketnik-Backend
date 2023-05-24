@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -158,8 +159,68 @@ func PopFirstStop(c *gin.Context) {
 			i++
 		}
 
+		_, err = utils.CheckBase().Database("PametniPaketnik").Collection("orders").UpdateMany(
+			context.TODO(),
+			bson.M{"_id": packageRoute.Orders[0]},
+			bson.M{"$set": bson.M{"status": "Completed"}},
+		)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update PackageRoute"})
+			return
+		}
+
+		var ord schemas.Order
+		err = utils.CheckBase().Database("PametniPaketnik").Collection("orders").FindOne(context.TODO(), bson.M{"_id": packageRoute.Orders[0]}).Decode(&ord)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update PackageRoute"})
+			return
+		}
+
+		var entry schemas.Entry
+		entry.BoxId = ord.BoxID
+		entry.DeliveryId = 1
+		entry.EntryType = "orderCompleted"
+		entry.Latitude = 0
+		entry.Longitude = 0
+		entry.LoggerId = zeroObjectID
+		entry.TimeAccessed = time.Now().Unix()
+
+		_, err = utils.CheckBase().Database("PametniPaketnik").Collection("entries").InsertOne(context.Background(), entry)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update PackageRoute"})
+			return
+		}
+
 		packageRoute.Orders = packageRoute.Orders[i:]
 		packageRoute.Stops = packageRoute.Stops[i:]
+
+		rs, _ := utils.CheckBase().Database("PametniPaketnik").Collection("orders").Find(context.Background(), bson.M{"orders": bson.M{"$in": packageRoute.Orders}})
+
+		var entries []schemas.Entry
+		for rs.Next(context.TODO()) {
+			var element schemas.Order
+			err := rs.Decode(&element)
+			if err != nil {
+				log.Fatal(err)
+			}
+			entry.BoxId = element.BoxID
+			entry.DeliveryId = 2
+			entry.EntryType = "oneStopCloser"
+			entry.Latitude = 0
+			entry.Longitude = 0
+			entry.LoggerId = zeroObjectID
+			entry.TimeAccessed = time.Now().Unix()
+			entries = append(entries, entry)
+		}
+
+		var docs []interface{}
+		for _, entry := range entries {
+			docs = append(docs, entry)
+		}
+		_, err := utils.CheckBase().Database("PametniPaketnik").Collection("entries").InsertMany(context.Background(), docs)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	_, err = utils.CheckBase().Database("PametniPaketnik").Collection("packageRoutes").UpdateOne(
