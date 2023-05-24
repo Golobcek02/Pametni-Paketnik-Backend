@@ -173,7 +173,7 @@ func PopFirstStop(c *gin.Context) {
 					entry.Latitude = 0
 					entry.Longitude = 0
 					entry.LoggerId = zeroObjectID
-					entry.TimeAccessed = time.Now().Unix()
+					entry.TimeAccessed = time.Now().UnixMilli()
 					entries = append(entries, entry)
 				}
 			}
@@ -220,7 +220,7 @@ func PopFirstStop(c *gin.Context) {
 		entry.Latitude = 0
 		entry.Longitude = 0
 		entry.LoggerId = zeroObjectID
-		entry.TimeAccessed = time.Now().Unix()
+		entry.TimeAccessed = time.Now().UnixMilli()
 
 		_, err = utils.CheckBase().Database("PametniPaketnik").Collection("entries").InsertOne(context.Background(), entry)
 		if err != nil {
@@ -249,7 +249,7 @@ func PopFirstStop(c *gin.Context) {
 					entry.Latitude = 0
 					entry.Longitude = 0
 					entry.LoggerId = zeroObjectID
-					entry.TimeAccessed = time.Now().Unix()
+					entry.TimeAccessed = time.Now().UnixMilli()
 					entries = append(entries, entry)
 				}
 			}
