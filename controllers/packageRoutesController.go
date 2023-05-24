@@ -223,7 +223,7 @@ func PopFirstStop(c *gin.Context) {
 			docs = append(docs, entry)
 		}
 
-		if len(docs) == 0 {
+		if len(docs) == 1 {
 			_, err := utils.CheckBase().Database("PametniPaketnik").Collection("entries").InsertMany(context.Background(), docs)
 			if err != nil {
 				panic(err)
