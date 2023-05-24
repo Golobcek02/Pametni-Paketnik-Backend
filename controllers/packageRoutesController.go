@@ -278,7 +278,7 @@ func PopFirstStop(c *gin.Context) {
 		return
 	}
 
-	if len(packageRoute.Stops) != 0 {
+	if len(packageRoute.Stops) == 0 {
 		_, err = utils.CheckBase().Database("PametniPaketnik").Collection("packageRoutes").DeleteOne(context.TODO(), bson.M{"_id": id})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update PackageRoute"})
