@@ -222,9 +222,12 @@ func PopFirstStop(c *gin.Context) {
 		for _, entry := range entries {
 			docs = append(docs, entry)
 		}
-		_, err := utils.CheckBase().Database("PametniPaketnik").Collection("entries").InsertMany(context.Background(), docs)
-		if err != nil {
-			panic(err)
+
+		if len(docs) == 0 {
+			_, err := utils.CheckBase().Database("PametniPaketnik").Collection("entries").InsertMany(context.Background(), docs)
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 
@@ -236,6 +239,14 @@ func PopFirstStop(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update PackageRoute"})
 		return
+	}
+
+	if len(packageRoute.Stops) == 0 {
+		_, err = utils.CheckBase().Database("PametniPaketnik").Collection("packageRoutes").DeleteOne(context.TODO(), bson.M{"_id": id})
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update PackageRoute"})
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "success"})
