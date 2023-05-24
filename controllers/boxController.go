@@ -16,6 +16,58 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+func ClaimBox(c *gin.Context) {
+	var requestData struct {
+		BoxID  int
+		UserID string
+	}
+
+	if err := c.BindJSON(&requestData); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.Background(), bson.D{{}})
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	ownerID, err := primitive.ObjectIDFromHex(requestData.UserID)
+	emptyID, err := primitive.ObjectIDFromHex("000000000000")
+	for cur.Next(context.TODO()) {
+		var elem schemas.Box
+		err := cur.Decode(&elem)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if elem.BoxId == requestData.BoxID {
+			if elem.OwnerId != emptyID {
+				c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Someone already owns this box"})
+				return
+			}
+
+			_, error := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(context.Background(),
+				bson.D{{Key: "boxid", Value: requestData.BoxID}},
+				bson.D{{Key: "$set", Value: bson.D{
+					{Key: "ownerid", Value: ownerID},
+				}}},
+				options.Update().SetUpsert(true))
+
+			if error != nil {
+				panic(error)
+			}
+
+			c.IndentedJSON(http.StatusOK, gin.H{"message": "Box ownership successfully updated!"})
+			return
+		}
+	}
+
+	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Box not found"})
+
+}
+
 func AddUserBox(c *gin.Context) {
 	var requestData struct {
 		UserID     string
@@ -72,22 +124,21 @@ func AddUserBox(c *gin.Context) {
 			return
 		}
 	}
-	//str, _ := primitive.ObjectIDFromHex(requestData.UserID)
 
 	var box schemas.Box
 	var temp []primitive.ObjectID
 	box.BoxId, _ = strconv.Atoi(requestData.SmartBoxID)
+	box.OwnerId = emptyId
+	box.AccessIds = temp
 	box.Latitude = requestData.Lat
 	box.Longitude = requestData.Lon
-	box.OwnerId = str
-	box.AccessIds = temp
 	fmt.Println(box)
 
 	result, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").InsertOne(context.Background(), box)
 	fmt.Println(err)
 	fmt.Println(result.InsertedID)
 
-	c.IndentedJSON(http.StatusOK, gin.H{"message": "Box successfully inserted!"})
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "Box ownership successful!"})
 }
 
 func RemoveBox(c *gin.Context) {
