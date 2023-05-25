@@ -8,10 +8,11 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 func LoginFaceID(c *gin.Context) {
-	userId := c.Param("id")
+	userId := strings.TrimSpace(c.Param("id"))
 
 	// Parse the multipart form
 	err := c.Request.ParseMultipartForm(32 << 20) // 32MB max memory
