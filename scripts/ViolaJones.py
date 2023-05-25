@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import cv2
 
@@ -33,40 +35,42 @@ def process_images(image_array):
         bgdModel = np.zeros((1, 65), np.float64)
         fgdModel = np.zeros((1, 65), np.float64)
 
-        smaller_margin_x = margin_x // 4
-        smaller_margin_y = margin_y // 4
-        rect = (smaller_margin_x, smaller_margin_y, face_img.shape[1] - 2 * smaller_margin_x,
-                face_img.shape[0] - 2 * smaller_margin_y)
+        # smaller_margin_x = margin_x // 4
+        # smaller_margin_y = margin_y // 4
+        # rect = (smaller_margin_x, smaller_margin_y, face_img.shape[1] - 2 * smaller_margin_x,
+        #         face_img.shape[0] - 2 * smaller_margin_y)
 
         # cv2.grabCut(face_img, mask, rect, bgdModel, fgdModel, 5, cv2.GC_INIT_WITH_RECT)
 
-        mask2 = np.where((mask == 2) | (mask == 0), 0, 1).astype('uint8')
+        # mask2 = np.where((mask == 2) | (mask == 0), 0, 1).astype('uint8')
 
-        face_img = face_img * mask2[:, :, np.newaxis]
+        # face_img = face_img * mask2[:, :, np.newaxis]
 
         return face_img
 
     all_face_images = []
-    i=0
+    i = 0
     for image_file in image_array:
-        # image = cv2.imread(image_file)
+        image = cv2.imread(image_file)
         if image_file is None:
             print(f"Unable to read {image_file}. Skipping...")
             continue
 
-        gray = cv2.cvtColor(image_file, cv2.COLOR_BGR2GRAY)
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, 1.3, 5)
 
-        face_images = [process_face(face, image_file) for face in faces]
+        face_images = [process_face(face, image) for face in faces]
 
         if not face_images:
             i += 1
-            print(f"No faces found {i} .")
+            print(f"No faces found {image_file} .")
+            os.remove(image_file)
         else:
             all_face_images.extend(face_images)
 
     return np.array(all_face_images)
 
 # Example usage:
+# image files =
 # processed_images = process_images(image_files)
 # display_images(processed_images)

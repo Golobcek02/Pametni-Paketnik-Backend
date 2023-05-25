@@ -36,8 +36,8 @@ labels = np.array(labels)
 VJimg = []
 g = 0
 for file in glob.glob("../images/baseModel/*.*"):
-    VJimg.append(cv2.imread(file))
-VJimg = np.array(VJimg)
+    VJimg.append(file)
+# VJimg = np.array(VJimg)
 VJimg = process_images(VJimg)
 
 images = []
