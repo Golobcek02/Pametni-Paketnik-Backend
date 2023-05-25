@@ -1,4 +1,6 @@
 import glob
+import os
+import sys
 
 import cv2
 import h5py
@@ -9,8 +11,16 @@ from sklearn.model_selection import train_test_split
 from Hog import hog
 from Lbp import lbp
 
+user_id = sys.argv[1].rstrip("\r\n")
+
+folder_path = f"../images/{user_id}"
+
+files = os.listdir(folder_path)
+
+image_count = len(files)
+
 labels = []
-for i in range(560):
+for i in range(530 + image_count):
     if i < 530:
         labels.append(0)
     else:
@@ -23,8 +33,8 @@ with h5py.File('models/basemodel.h5', 'r') as f:
 data = np.array(data)
 images = []
 g = 0
-for file in glob.glob("G:/Faks/Sola/2.letnik/2.semester/projekt/vid/faces/neke/*.*"):
-    if g < 30:
+for file in glob.glob(f"../images/{user_id}/*.*"):
+    if g < image_count:
         img = cv2.imread(file)
         img = cv2.resize(img, (100, 100))
         gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -56,9 +66,9 @@ model = tf.keras.models.Sequential([
 model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
 # Train model
-model.fit(X_train, y_train_encoded, epochs=10, batch_size=32, validation_data=(X_test, y_test_encoded))
+model.fit(X_train, y_train_encoded, epochs=12, batch_size=32, validation_data=(X_test, y_test_encoded))
 
 # Evaluate model
 test_loss, test_acc = model.evaluate(X_test, y_test_encoded)
-model.save("models/" + id + ".h5")
+model.save("models/" + user_id + ".h5")
 print(True)
