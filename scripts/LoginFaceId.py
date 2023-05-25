@@ -1,4 +1,6 @@
+import shutil
 import sys
 
-# print(sys.argv)
+user_id = sys.argv[1].rstrip("\r\n")
+
 print(True)
