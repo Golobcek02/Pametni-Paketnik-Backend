@@ -10,6 +10,7 @@ from sklearn.model_selection import train_test_split
 
 from Hog import hog
 from Lbp import lbp
+from ViolaJones import process_images
 
 user_id = sys.argv[1].rstrip("\r\n")
 
@@ -31,11 +32,16 @@ with h5py.File('models/basemodel.h5', 'r') as f:
     data = f['basemodel'][:]
 
 data = np.array(data)
-images = []
+VJimg = []
 g = 0
 for file in glob.glob(f"../images/{user_id}/*.*"):
+    VJimg = np.array(cv2.imread(file))
+VJimg = np.array(VJimg)
+VJimg=process_images(VJimg)
+
+images=[]
+for img in VJimg:
     if g < image_count:
-        img = cv2.imread(file)
         img = cv2.resize(img, (100, 100))
         gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         lbp_image = lbp(gray_image)
@@ -43,8 +49,8 @@ for file in glob.glob(f"../images/{user_id}/*.*"):
         feature_vector = np.concatenate((lbp_image.flatten(), hog_descriptor))
         images.append(feature_vector)
     g = g + 1
+VJimg = np.array(images)
 
-images = np.array(images)
 data = np.vstack((data, images))
 # Split data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(data, labels, train_size=0.9, random_state=80, stratify=labels)

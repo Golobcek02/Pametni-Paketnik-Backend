@@ -68,5 +68,5 @@ def process_images(image_array):
 
 
 # Example usage:
-processed_images = process_images(image_files)
-display_images(processed_images)
+#processed_images = process_images(image_files)
+#display_images(processed_images)
