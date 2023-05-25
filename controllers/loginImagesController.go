@@ -38,7 +38,7 @@ func LoginFaceID(c *gin.Context) {
 	}
 
 	// Create a directory to store the images
-	err = os.MkdirAll("uploads", os.ModePerm)
+	err = os.MkdirAll("images/"+userId, os.ModePerm)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -55,7 +55,7 @@ func LoginFaceID(c *gin.Context) {
 		defer src.Close()
 
 		// Create the destination file
-		dstPath := fmt.Sprintf("uploads/%s", file.Filename)
+		dstPath := fmt.Sprintf("images/%s/%s", userId, file.Filename)
 		dst, err := os.Create(dstPath)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
