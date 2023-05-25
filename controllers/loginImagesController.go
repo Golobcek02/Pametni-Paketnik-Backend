@@ -71,8 +71,8 @@ func LoginFaceID(c *gin.Context) {
 		}
 	}
 
-	//cmd := exec.Command("cmd", "python", "temp.py", "Register", "id")
-	cmd := exec.Command("python", "scripts/temp.py", string(userId))
+	//cmd := exec.Command("cmd", "python", "LoginFaceId.py", "Register", "id")
+	cmd := exec.Command("python", "scripts/LoginFaceId.py", string(userId))
 	out, err := cmd.Output()
 
 	if err != nil {
