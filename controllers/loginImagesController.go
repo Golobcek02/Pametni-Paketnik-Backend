@@ -79,8 +79,8 @@ func LoginFaceID(c *gin.Context) {
 		println(err.Error())
 		return
 	}
-
-	fmt.Println(string(out))
+	neke := string(out)
+	fmt.Println(neke)
 	res := true
 	if string(out)[0] != 'T' {
 		res = false
