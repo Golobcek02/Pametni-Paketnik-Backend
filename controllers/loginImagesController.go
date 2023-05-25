@@ -11,6 +11,10 @@ import (
 )
 
 func LoginFaceID(c *gin.Context) {
+
+	userId := c.Param("id")
+	println(userId)
+
 	// Parse the multipart form
 	err := c.Request.ParseMultipartForm(32 << 20) // 32MB max memory
 	if err != nil {
@@ -68,7 +72,7 @@ func LoginFaceID(c *gin.Context) {
 	}
 
 	//cmd := exec.Command("cmd", "python", "temp.py", "Register", "id")
-	cmd := exec.Command("python", "scripts/temp.py")
+	cmd := exec.Command("python", "scripts/temp.py", string(userId))
 	out, err := cmd.Output()
 
 	if err != nil {
@@ -77,7 +81,6 @@ func LoginFaceID(c *gin.Context) {
 	}
 
 	fmt.Println(string(out))
-
 	res := true
 	if string(out)[0] != 'T' {
 		res = false
