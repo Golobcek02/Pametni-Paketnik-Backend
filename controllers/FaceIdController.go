@@ -95,6 +95,9 @@ func LoginFaceID(c *gin.Context) {
 }
 
 func RegisterFaceID(c *gin.Context) {
+
+	userId := c.Param("id")
+
 	// Parse the multipart form
 	err := c.Request.ParseMultipartForm(32 << 20) // 32MB max memory
 	if err != nil {
@@ -118,7 +121,7 @@ func RegisterFaceID(c *gin.Context) {
 	}
 
 	// Create a directory to store the images
-	err = os.MkdirAll("model", os.ModePerm)
+	err = os.MkdirAll("images/"+userId, os.ModePerm)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -132,24 +135,46 @@ func RegisterFaceID(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		defer src.Close()
 
 		// Create the destination file
-		dstPath := fmt.Sprintf("model/%s", file.Filename)
+		dstPath := fmt.Sprintf("images/%s/%s", userId, file.Filename)
 		dst, err := os.Create(dstPath)
 		if err != nil {
+			src.Close()
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-		defer dst.Close()
 
 		// Copy the file contents to the destination
 		_, err = io.Copy(dst, src)
+		dst.Close()
+		src.Close()
+
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 	}
 
-	c.JSON(http.StatusOK, true)
+	cmd := exec.Command("python", "scripts/RegisterFaceId.py", userId)
+	out, err := cmd.Output()
+
+	if err != nil {
+		println(err.Error())
+		return
+	}
+	neke := string(out)
+	fmt.Println(neke)
+	res := true
+	if string(out)[0] != 'T' {
+		res = false
+	}
+
+	removeErr := os.RemoveAll("images/" + userId)
+	if removeErr != nil {
+		fmt.Println(removeErr.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, res)
 }

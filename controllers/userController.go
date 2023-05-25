@@ -5,6 +5,7 @@ import (
 	"backend/utils"
 	"context"
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -45,7 +46,7 @@ func Register(c *gin.Context) {
 		result, err := utils.CheckBase().Database("PametniPaketnik").Collection("users").InsertOne(context.TODO(), registerUser)
 		fmt.Println(err)
 		fmt.Println(result.InsertedID)
-		c.IndentedJSON(http.StatusOK, bson.M{"res": "Proceede"})
+		c.IndentedJSON(http.StatusOK, bson.M{"res": "Proceede", "ID": result.InsertedID.(primitive.ObjectID).Hex()})
 		return
 	}
 

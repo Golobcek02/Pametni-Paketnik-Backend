@@ -28,5 +28,5 @@ func Router(Router *gin.Engine) {
 	Router.POST("/updateOrderRoute/:BoxID", controllers.UpdateOrderRoute)
 	Router.POST("/popFirstStop/:id", controllers.PopFirstStop)
 	Router.POST("/login2fa/:id", controllers.LoginFaceID)
-	Router.POST("/createFaceID", controllers.RegisterFaceID)
+	Router.POST("/createFaceID/:id", controllers.RegisterFaceID)
 }
