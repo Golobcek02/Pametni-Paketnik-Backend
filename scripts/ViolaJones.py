@@ -49,15 +49,15 @@ def process_images(image_array):
     all_face_images = []
 
     for image_file in image_array:
-        image = cv2.imread(image_file)
-        if image is None:
-            print(f"Unable to read {image_file}. Skipping...")
-            continue
-
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # image = cv2.imread(image_file)
+        # if image is None:
+        #     print(f"Unable to read {image_file}. Skipping...")
+        #     continue
+        #
+        gray = cv2.cvtColor(image_file, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, 1.3, 5)
 
-        face_images = [process_face(face, image) for face in faces]
+        face_images = [process_face(face, image_file) for face in faces]
 
         if not face_images:
             print(f"No faces found in {image_file}.")
@@ -66,7 +66,6 @@ def process_images(image_array):
 
     return np.array(all_face_images)
 
-
 # Example usage:
-#processed_images = process_images(image_files)
-#display_images(processed_images)
+# processed_images = process_images(image_files)
+# display_images(processed_images)

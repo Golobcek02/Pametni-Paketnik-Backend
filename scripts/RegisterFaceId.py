@@ -12,13 +12,13 @@ from Hog import hog
 from Lbp import lbp
 from ViolaJones import process_images
 
-user_id = sys.argv[1].rstrip("\r\n")
+# user_id = sys.argv[1].rstrip("\r\n")
 
-folder_path = f"../images/{user_id}"
-
-files = os.listdir(folder_path)
-
-image_count = len(files)
+# folder_path = f"../images/{user_id}"
+#
+# files = os.listdir(folder_path)
+#
+# image_count = len(files)
 
 labels = []
 for i in range(530):
