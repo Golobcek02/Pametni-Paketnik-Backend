@@ -12,45 +12,73 @@ from Hog import hog
 from Lbp import lbp
 from ViolaJones import process_images
 
-# user_id = sys.argv[1].rstrip("\r\n")
+user_id = sys.argv[1].rstrip("\r\n")
 
-# folder_path = f"../images/{user_id}"
+folder_path = f"../images/{user_id}"
 #
-# files = os.listdir(folder_path)
+files = os.listdir(folder_path)
 #
-# image_count = len(files)
+image_count = len(files)
 
 labels = []
-for i in range(530):
-    if i < 530:
+for i in range(409 + image_count):
+    if i < 409:
         labels.append(0)
     else:
         labels.append(1)
 
 labels = np.array(labels)
-# with h5py.File('models/basemodel.h5', 'r') as f:
-#     data = f['basemodel'][:]
-# neke = cv2.imread("../images/nejke.jpg")
-# data = np.array(data)
-# cv2.imshow("banana", neke)
+with h5py.File('../models/baseModel.h5', 'r') as f:
+    data = f['baseModel'][:]
+data = np.array(data)
 VJimg = []
 g = 0
-for file in glob.glob("../images/baseModel/*.*"):
-    VJimg.append(file)
-# VJimg = np.array(VJimg)
-VJimg = process_images(VJimg)
+for file in glob.glob(f"../images/{str(user_id)}/*.*"):
+    VJimg.append(cv2.imread(file))
+# VJimg = process_images(VJimg)
+VJimg = np.array(VJimg)
 
 images = []
 for img in VJimg:
-    # if g < image_count:
-    img = cv2.resize(img, (100, 100))
-    gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    lbp_image = lbp(gray_image)
-    hog_descriptor = hog(gray_image, 8, 2, 9)
-    feature_vector = np.concatenate((lbp_image.flatten(), hog_descriptor))
-    images.append(feature_vector)
-g = g + 1
-images = np.array(images)
+    if g < image_count:
+        img = cv2.resize(img, (100, 100))
+        gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        lbp_image = lbp(gray_image)
+        hog_descriptor = hog(gray_image, 8, 2, 9)
+        feature_vector = np.concatenate((lbp_image.flatten(), hog_descriptor))
+        images.append(feature_vector)
+    g = g + 1
 
-with h5py.File("../models/baseModel.h5", 'w') as F:
-    dset = F.create_dataset('baseModel', data=images)
+# images = np.array(images)
+
+# with h5py.File(f"../models/{user_id}.h5", 'w') as F:
+#     dset = F.create_dataset(f"{user_id}", data=images)
+
+
+data = np.vstack((data, images))
+# # Split data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(data, labels, train_size=0.9, random_state=80, stratify=labels)
+# # One-hot encode labels
+num_classes = len(np.unique(labels))
+y_train_encoded = tf.keras.utils.to_categorical(y_train, num_classes)
+y_test_encoded = tf.keras.utils.to_categorical(y_test, num_classes)
+#
+# # Define neural network architecture
+model = tf.keras.models.Sequential([
+    tf.keras.layers.Dense(128, activation='relu', input_shape=(X_train.shape[1],)),
+    tf.keras.layers.Dropout(0.2),
+    tf.keras.layers.Dense(64, activation='relu'),
+    tf.keras.layers.Dropout(0.2),
+    tf.keras.layers.Dense(num_classes, activation='softmax')  # Update the number of output units
+])
+#
+# # Compile model
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+#
+# # Train model
+model.fit(X_train, y_train_encoded, epochs=12, batch_size=32, validation_data=(X_test, y_test_encoded))
+#
+# # Evaluate model
+test_loss, test_acc = model.evaluate(X_test, y_test_encoded)
+model.save("../models/" + user_id + ".h5")
+print(True)
