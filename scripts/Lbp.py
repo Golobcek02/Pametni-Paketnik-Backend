@@ -4,6 +4,7 @@ def lbp(image):
 
     height, width = image.shape
     lbp_image = np.zeros((height, width), dtype=np.uint8)
+    image = np.pad(image, pad_width=1)
 
     for ih in range(1, height - 1):
         for iw in range(1, width - 1):
