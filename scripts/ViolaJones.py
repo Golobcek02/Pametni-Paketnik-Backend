@@ -38,7 +38,7 @@ def process_images(image_array):
         rect = (smaller_margin_x, smaller_margin_y, face_img.shape[1] - 2 * smaller_margin_x,
                 face_img.shape[0] - 2 * smaller_margin_y)
 
-        cv2.grabCut(face_img, mask, rect, bgdModel, fgdModel, 5, cv2.GC_INIT_WITH_RECT)
+        # cv2.grabCut(face_img, mask, rect, bgdModel, fgdModel, 5, cv2.GC_INIT_WITH_RECT)
 
         mask2 = np.where((mask == 2) | (mask == 0), 0, 1).astype('uint8')
 
@@ -47,20 +47,21 @@ def process_images(image_array):
         return face_img
 
     all_face_images = []
-
+    i=0
     for image_file in image_array:
         # image = cv2.imread(image_file)
-        # if image is None:
-        #     print(f"Unable to read {image_file}. Skipping...")
-        #     continue
-        #
+        if image_file is None:
+            print(f"Unable to read {image_file}. Skipping...")
+            continue
+
         gray = cv2.cvtColor(image_file, cv2.COLOR_BGR2GRAY)
         faces = face_cascade.detectMultiScale(gray, 1.3, 5)
 
         face_images = [process_face(face, image_file) for face in faces]
 
         if not face_images:
-            print(f"No faces found in {image_file}.")
+            i += 1
+            print(f"No faces found {i} .")
         else:
             all_face_images.extend(face_images)
 
