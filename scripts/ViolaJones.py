@@ -1,3 +1,4 @@
+import concurrent.futures
 import numpy as np
 import cv2
 
@@ -5,15 +6,18 @@ face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_fronta
 
 img = cv2.imread('neke.jpg')
 
+# Resize the image
+img = cv2.resize(img, (100, 100), interpolation=cv2.INTER_AREA)
+
 gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
 faces = face_cascade.detectMultiScale(gray, 1.3, 5)
 
 margin = 0.2
 
-face_images = []
 
-for (x, y, w, h) in faces:
+def process_face(face):
+    (x, y, w, h) = face
     margin_x = int(w * margin)
     margin_y = int(h * margin)
 
@@ -31,7 +35,8 @@ for (x, y, w, h) in faces:
 
     smaller_margin_x = margin_x // 4
     smaller_margin_y = margin_y // 4
-    rect = (smaller_margin_x, smaller_margin_y, face_img.shape[1] - 2*smaller_margin_x, face_img.shape[0] - 2*smaller_margin_y)
+    rect = (smaller_margin_x, smaller_margin_y, face_img.shape[1] - 2 * smaller_margin_x,
+            face_img.shape[0] - 2 * smaller_margin_y)
 
     cv2.grabCut(face_img, mask, rect, bgdModel, fgdModel, 5, cv2.GC_INIT_WITH_RECT)
 
@@ -39,10 +44,14 @@ for (x, y, w, h) in faces:
 
     face_img = face_img * mask2[:, :, np.newaxis]
 
-    face_images.append(face_img)
+    return face_img
+
+
+with concurrent.futures.ThreadPoolExecutor() as executor:
+    face_images = list(executor.map(process_face, faces))
 
 for i, face_img in enumerate(face_images):
-    cv2.imshow(f'Face {i+1}', face_img)
+    cv2.imshow(f'Face {i + 1}', face_img)
 
-cv2.waitKey()
+cv2.waitKey(0)
 cv2.destroyAllWindows()
