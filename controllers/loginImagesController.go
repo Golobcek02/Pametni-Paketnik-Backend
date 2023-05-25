@@ -7,6 +7,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"os/exec"
 )
 
 func LoginFaceID(c *gin.Context) {
@@ -66,7 +67,23 @@ func LoginFaceID(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, true)
+	//cmd := exec.Command("cmd", "python", "temp.py", "Register", "id")
+	cmd := exec.Command("python", "scripts/temp.py")
+	out, err := cmd.Output()
+
+	if err != nil {
+		println(err.Error())
+		return
+	}
+
+	fmt.Println(string(out))
+
+	res := true
+	if string(out)[0] != 'T' {
+		res = false
+	}
+
+	c.JSON(http.StatusOK, res)
 }
 
 func RegisterFaceID(c *gin.Context) {
