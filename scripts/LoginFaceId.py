@@ -33,8 +33,15 @@ accuracy = np.mean(predicted_labels == labels)
 #print("Accuracy for the three images:", accuracy)
 
 # Append the accuracy to an array
-accuracies = []
+accuracies =0
 
-accuracies.append(accuracy)
+for acc in accuracy:
+    accuracies+=acc
+
+accuracies=accuracies/3
+if accuracies>0.6:
+    print(True)
+else:
+    print(False)
 
 # Print the array of accuracies
