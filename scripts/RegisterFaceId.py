@@ -14,8 +14,6 @@ from ViolaJones import process_images
 
 user_id = sys.argv[1].rstrip("\r\n")
 
-os.mkdir("bananan")
-
 folder_path = f"images/{user_id}"
 
 files = os.listdir(folder_path)

@@ -157,25 +157,21 @@ func RegisterFaceID(c *gin.Context) {
 		}
 	}
 
-	cmd := exec.Command("python", "scripts/RegisterFaceId.py", userId)
-	out, err := cmd.Output()
-
-	if err != nil {
-		println(err.Error())
-		return
-	}
-	neke := string(out)
-	fmt.Println(neke)
-	//res := true
-	//if string(out)[0] != 'T' {
-	//	res = false
-	//}
-
-	//removeErr := os.RemoveAll("images/" + userId)
-	//if removeErr != nil {
-	//	fmt.Println(removeErr.Error())
-	//	return
-	//}
+	go func() {
+		cmd := exec.Command("python", "scripts/RegisterFaceId.py", userId)
+		out, err := cmd.Output()
+		if err != nil {
+			println(err.Error())
+			return
+		} else {
+			fmt.Println(string(out))
+		}
+		removeErr := os.RemoveAll("images/" + userId)
+		if removeErr != nil {
+			fmt.Println(removeErr.Error())
+			return
+		}
+	}()
 
 	c.JSON(http.StatusOK, true)
 }
