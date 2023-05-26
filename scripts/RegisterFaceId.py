@@ -59,6 +59,8 @@ for img in VJimg:
 images = np.array(images)
 
 data = np.vstack((data, images))
+data = np.resize(data, len(labels))
+
 # Split data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(data, labels, train_size=0.9, random_state=80, stratify=labels)
 # One-hot encode labels
