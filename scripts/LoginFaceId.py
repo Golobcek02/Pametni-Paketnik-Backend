@@ -3,17 +3,19 @@ import h5py
 import glob
 import cv2
 import tensorflow as tf
-from lbp import lbp
-from hog import hog
+import os
+import sys
+from Lbp import lbp
+from Hog import hog
 
 user_id = sys.argv[1].rstrip("\r\n")
 
-folder_path = f"../images/{user_id}"
+folder_path = f"images/{user_id}"
 files = os.listdir(folder_path)
 image_count = len(files)
 
 images = []
-for file in glob.glob(f"../images/{str(user_id)}/*.*"):
+for file in glob.glob(f"images/{str(user_id)}/*.*"):
     img = cv2.imread(file)
     img = cv2.resize(img, (100, 100))
     gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -36,5 +38,5 @@ accuracy = np.mean(predicted_labels == labels)
 accuracies = []
 
 accuracies.append(accuracy)
-
+print(accuracies)
 # Print the array of accuracies

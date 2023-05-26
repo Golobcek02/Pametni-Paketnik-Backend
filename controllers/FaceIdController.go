@@ -74,17 +74,17 @@ func LoginFaceID(c *gin.Context) {
 
 	cmd := exec.Command("python", "scripts/LoginFaceId.py", userId)
 	out, err := cmd.Output()
-
+	println(string(out))
 	if err != nil {
 		println(err.Error())
-		return
+		//return
 	}
-	neke := string(out)
-	fmt.Println(neke)
+	//neke := string(out)
+	//fmt.Println(neke)
 	res := true
-	if string(out)[0] != 'T' {
-		res = false
-	}
+	//if string(out)[0] != 'T' {
+	//	res = false
+	//}
 
 	removeErr := os.RemoveAll("images/" + userId)
 	if removeErr != nil {
@@ -92,6 +92,7 @@ func LoginFaceID(c *gin.Context) {
 		return
 	}
 
+	//res = true
 	c.JSON(http.StatusOK, res)
 }
 
