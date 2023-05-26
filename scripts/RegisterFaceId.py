@@ -40,7 +40,7 @@ g = 0
 
 for file in glob.glob(f"../images/{user_id}/*.*"):
     temp = cv2.imread(file)
-    #TOTO LINIJO TESITRAJ KO BO NA APLIKACIJI HOSTANO
+    # TOTO LINIJO TESITRAJ KO BO NA APLIKACIJI HOSTANO
     temp = cv2.rotate(temp, cv2.ROTATE_90_COUNTERCLOCKWISE)
     VJimg.append(temp)
 VJimg = process_images(VJimg)
