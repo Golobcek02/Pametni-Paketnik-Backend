@@ -249,3 +249,40 @@ func GetUserBoxes(c *gin.Context) {
 	obj := bson.M{"allBoxes": allBoxes}
 	c.IndentedJSON(http.StatusOK, obj)
 }
+
+func AuthenticateUser(c *gin.Context) {
+	var requestData struct {
+		UserID string
+		BoxID  int
+	}
+
+	if err := c.BindJSON(&requestData); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	fmt.Println(requestData)
+	str, _ := primitive.ObjectIDFromHex(requestData.UserID)
+
+	var res schemas.Box
+	err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").FindOne(context.TODO(), bson.D{{Key: "boxid", Value: requestData.BoxID}}).Decode(&res)
+	if err == mongo.ErrNoDocuments {
+		c.JSON(http.StatusInternalServerError, "Error")
+	}
+	var result = false
+
+	if str == res.OwnerId {
+		result = true
+		c.JSON(http.StatusOK, result)
+		return
+	}
+
+	for _, v := range res.AccessIds {
+		if v == str {
+			result = true
+			c.JSON(http.StatusOK, result)
+			return
+		}
+	}
+
+	c.JSON(http.StatusForbidden, result)
+}
