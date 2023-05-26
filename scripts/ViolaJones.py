@@ -12,31 +12,35 @@ def display_images(image_array):
     cv2.destroyAllWindows()
 
 
+
 def process_images(image_array):
     all_face_images=[]
     for image in image_array:
-        grayscale_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
+        grayscale_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-        face_cascade = cv.CascadeClassifier('path/to/haarcascade_frontalface_alt.xml')
+        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades +'haarcascade_frontalface_default.xml')
         detected_faces = face_cascade.detectMultiScale(grayscale_image)
 
-        x, y, w, h = detected_faces[0]  # Assuming there's only one face detected
+
+        x, y, w, h = detected_faces[0]
         face_region = image[y:y + h, x:x + w]
 
         scale_width = w / image.shape[1]
         scale_height = h / image.shape[0]
 
-        new_width = int(original_image.shape[1] * scale_width)
-        new_height = int(original_image.shape[0] * scale_height)
+        new_width = int(image.shape[1] * scale_width)
+        new_height = int(image.shape[0] * scale_height)
 
-        resized_image = cv.resize(image, (new_width, new_height), interpolation=cv.INTER_AREA)
+        resized_image = cv2.resize(face_region, (new_width, new_height), interpolation=cv2.INTER_AREA)
 
 
-        all_face_images.append(face_region)
+        all_face_images.append(resized_image)
 
     return np.array(all_face_images)
 
 # Example usage:
 # image files =
-# processed_images = process_images(image_files)
-# display_images(processed_images)
+temp=cv2.imread("nekee.jpg")
+
+processed_images = process_images([temp])
+display_images(processed_images)
