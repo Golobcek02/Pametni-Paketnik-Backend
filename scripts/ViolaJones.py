@@ -1,7 +1,5 @@
-import os
-
-import numpy as np
 import cv2
+import numpy as np
 
 
 def display_images(image_array):
@@ -36,15 +34,14 @@ def process_images(image_array):
         else:
             print("not detected")
 
-    return np.array(all_face_images)
+    return all_face_images
 
-
-#Example usage:
-#image files =
-#temp = cv2.imread("img2.jpg")
-#temp = cv2.rotate(temp, cv2.ROTATE_90_COUNTERCLOCKWISE)
-#cv2.imshow("bnaa", temp)
-#cv2.resize(temp, (1280, 720))
+# Example usage:
+# image files =
+# temp = cv2.imread("img2.jpg")
+# temp = cv2.rotate(temp, cv2.ROTATE_90_COUNTERCLOCKWISE)
+# cv2.imshow("bnaa", temp)
+# cv2.resize(temp, (1280, 720))
 #
-#processed_images = process_images([temp])
-#display_images(processed_images)
+# processed_images = process_images([temp])
+# display_images(processed_images)

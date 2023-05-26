@@ -20,8 +20,10 @@ files = os.listdir(folder_path)
 
 image_count = len(files)
 
-with h5py.File('../models/baseModel.h5', 'r') as f:
-    data = f['baseModel'][:]
+data = []
+
+with h5py.File('../models/habo.h5', 'r') as f:
+    data = f['basemodel'][:]
 data = np.array(data)
 
 base_model_images = len(data)
@@ -45,6 +47,12 @@ for file in glob.glob(f"../images/{user_id}/*.*"):
     VJimg.append(temp)
 VJimg = process_images(VJimg)
 
+if len(VJimg) != image_count:
+    print("error")
+    iterations = image_count - len(VJimg)
+    while image_count != len(VJimg):
+        VJimg.append(VJimg[0])
+
 images = []
 for img in VJimg:
     if g < image_count:
@@ -59,7 +67,9 @@ for img in VJimg:
 images = np.array(images)
 
 data = np.vstack((data, images))
-data = np.resize(data, len(labels))
+
+# data = np.resize(data, len(labels))
+# data = np.array(data)
 
 # Split data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(data, labels, train_size=0.9, random_state=80, stratify=labels)
