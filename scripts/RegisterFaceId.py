@@ -14,7 +14,9 @@ from ViolaJones import process_images
 
 user_id = sys.argv[1].rstrip("\r\n")
 
-folder_path = f"../images/{user_id}"
+os.mkdir("bananan")
+
+folder_path = f"images/{user_id}"
 
 files = os.listdir(folder_path)
 
@@ -22,8 +24,8 @@ image_count = len(files)
 
 data = []
 
-with h5py.File('../models/habo.h5', 'r') as f:
-    data = f['basemodel'][:]
+with h5py.File('models/baseModel.h5', 'r') as f:
+    data = f['baseModel'][:]
 data = np.array(data)
 
 base_model_images = len(data)
@@ -40,7 +42,7 @@ labels = np.array(labels)
 VJimg = []
 g = 0
 
-for file in glob.glob(f"../images/{user_id}/*.*"):
+for file in glob.glob(f"images/{user_id}/*.*"):
     temp = cv2.imread(file)
     # TOTO LINIJO TESITRAJ KO BO NA APLIKACIJI HOSTANO
     temp = cv2.rotate(temp, cv2.ROTATE_90_COUNTERCLOCKWISE)
@@ -95,5 +97,5 @@ model.fit(X_train, y_train_encoded, epochs=15, batch_size=32, validation_data=(X
 
 # # Evaluate model
 test_loss, test_acc = model.evaluate(X_test, y_test_encoded)
-model.save("../models/" + user_id + ".h5")
+model.save("models/" + user_id + ".h5")
 # print(True)

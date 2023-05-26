@@ -166,16 +166,16 @@ func RegisterFaceID(c *gin.Context) {
 	}
 	neke := string(out)
 	fmt.Println(neke)
-	res := true
-	if string(out)[0] != 'T' {
-		res = false
-	}
+	//res := true
+	//if string(out)[0] != 'T' {
+	//	res = false
+	//}
 
-	removeErr := os.RemoveAll("images/" + userId)
-	if removeErr != nil {
-		fmt.Println(removeErr.Error())
-		return
-	}
+	//removeErr := os.RemoveAll("images/" + userId)
+	//if removeErr != nil {
+	//	fmt.Println(removeErr.Error())
+	//	return
+	//}
 
-	c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, true)
 }
