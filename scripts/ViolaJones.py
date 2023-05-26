@@ -13,60 +13,26 @@ def display_images(image_array):
 
 
 def process_images(image_array):
-    face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+    all_face_images=[]
+    for image in image_array:
+        grayscale_image = cv.cvtColor(image, cv.COLOR_BGR2GRAY)
 
-    margin = 0.2
+        face_cascade = cv.CascadeClassifier('path/to/haarcascade_frontalface_alt.xml')
+        detected_faces = face_cascade.detectMultiScale(grayscale_image)
 
-    def process_face(face, img):
-        (x, y, w, h) = face
-        margin_x = int(w * margin)
-        margin_y = int(h * margin)
+        x, y, w, h = detected_faces[0]  # Assuming there's only one face detected
+        face_region = image[y:y + h, x:x + w]
 
-        x_start = max(0, x - margin_x)
-        y_start = max(0, y - margin_y)
-        x_end = min(img.shape[1], x + w + margin_x)
-        y_end = min(img.shape[0], y + h + margin_y)
+        scale_width = w / image.shape[1]
+        scale_height = h / image.shape[0]
 
-        face_img = img[y_start:y_end, x_start:x_end].copy()
-        face_img = cv2.resize(face_img, (100, 100), interpolation=cv2.INTER_AREA)
+        new_width = int(original_image.shape[1] * scale_width)
+        new_height = int(original_image.shape[0] * scale_height)
 
-        mask = np.zeros(face_img.shape[:2], np.uint8)
+        resized_image = cv.resize(image, (new_width, new_height), interpolation=cv.INTER_AREA)
 
-        bgdModel = np.zeros((1, 65), np.float64)
-        fgdModel = np.zeros((1, 65), np.float64)
 
-        # smaller_margin_x = margin_x // 4
-        # smaller_margin_y = margin_y // 4
-        # rect = (smaller_margin_x, smaller_margin_y, face_img.shape[1] - 2 * smaller_margin_x,
-        #         face_img.shape[0] - 2 * smaller_margin_y)
-
-        # cv2.grabCut(face_img, mask, rect, bgdModel, fgdModel, 5, cv2.GC_INIT_WITH_RECT)
-
-        # mask2 = np.where((mask == 2) | (mask == 0), 0, 1).astype('uint8')
-
-        # face_img = face_img * mask2[:, :, np.newaxis]
-
-        return face_img
-
-    all_face_images = []
-    i = 0
-    for image_file in image_array:
-        image = cv2.imread(image_file)
-        if image_file is None:
-            print(f"Unable to read {image_file}. Skipping...")
-            continue
-
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-
-        face_images = [process_face(face, image) for face in faces]
-
-        if not face_images:
-            i += 1
-            print(f"No faces found {image_file} .")
-            os.remove(image_file)
-        else:
-            all_face_images.extend(face_images)
+        all_face_images.append(face_region)
 
     return np.array(all_face_images)
 
