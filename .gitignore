@@ -1,3 +1,9 @@
 /uploads/
 Dockerfile
-/images
+/images/*
+/models/*
+!models/baseModel.h5
+.idea/misc.xml
+scripts/__pycache__/Hog.cpython-311.pyc
+scripts/__pycache__/Lbp.cpython-311.pyc
+scripts/__pycache__/ViolaJones.cpython-311.pyc
