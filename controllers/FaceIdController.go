@@ -167,11 +167,11 @@ func RegisterFaceID(c *gin.Context) {
 		} else {
 			fmt.Println(string(out))
 		}
-		removeErr := os.RemoveAll("images/" + userId)
-		if removeErr != nil {
-			fmt.Println(removeErr.Error())
-			return
-		}
+		//removeErr := os.RemoveAll("images/" + userId)
+		//if removeErr != nil {
+		//	fmt.Println(removeErr.Error())
+		//	return
+		//}
 	}()
 
 	c.JSON(http.StatusOK, true)
