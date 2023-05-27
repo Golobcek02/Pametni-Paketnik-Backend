@@ -1,6 +1,6 @@
 import numpy as np
 
-def lbp(image):
+def Lbp(image):
 
     height, width = image.shape
     lbp_image = np.zeros((height, width), dtype=np.uint8)
