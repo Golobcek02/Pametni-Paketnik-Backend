@@ -1,12 +1,13 @@
-import numpy as np
-import h5py
 import glob
-import cv2
-import tensorflow as tf
 import os
 import sys
-from Lbp import lbp
+
+import cv2
+import numpy as np
+import tensorflow as tf
+
 from Hog import hog
+from Lbp import lbp
 from ViolaJones import process_images
 
 user_id = sys.argv[1].rstrip("\r\n")
@@ -15,13 +16,13 @@ files = os.listdir(folder_path)
 image_count = len(files)
 
 vector = []
-images=[]
+images = []
 for file in glob.glob(f"images/{str(user_id)}/*.*"):
     img = cv2.imread(file)
-    img=cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+    img = cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
     vector.append(img)
 
-vector=process_images(vector)
+vector = process_images(vector)
 for img in vector:
     img = cv2.resize(img, (100, 100))
     gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -38,7 +39,7 @@ labels = np.ones(len(images))
 three_predictions = loaded_model.predict(images)
 predicted_labels = np.argmax(three_predictions, axis=1)
 accuracy = np.mean(predicted_labels == labels)
-if accuracy>0.6:
+if accuracy > 0.6:
     print(True)
 else:
     print(False)
