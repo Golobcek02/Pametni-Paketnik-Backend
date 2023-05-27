@@ -1,6 +1,7 @@
 /uploads/
 Dockerfile
 /images/*
+!images/baseModel
 /models/*
 !models/baseModel.h5
 .idea/misc.xml
