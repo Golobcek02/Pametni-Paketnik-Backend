@@ -1,5 +1,4 @@
 /uploads/
-Dockerfile
 /images/*
 !images/baseModel
 /models/*
