@@ -18,7 +18,7 @@ func GetUserEntries(c *gin.Context) {
 	objectId, err := primitive.ObjectIDFromHex(userId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
-		return
+		//return
 	}
 
 	var boxes []schemas.Box
@@ -27,20 +27,20 @@ func GetUserEntries(c *gin.Context) {
 	boxCursor, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.TODO(), boxFilter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find boxes"})
-		return
+		//return
 	}
 	for boxCursor.Next(context.Background()) {
 		var box schemas.Box
 		if err := boxCursor.Decode(&box); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode box"})
-			return
+			//return
 		}
 		boxes = append(boxes, box)
 		boxIds = append(boxIds, box.BoxId)
 	}
 	if err := boxCursor.Err(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to iterate over boxes"})
-		return
+		//return
 	}
 
 	var entries []schemas.Entry
@@ -48,19 +48,19 @@ func GetUserEntries(c *gin.Context) {
 	entryCursor, err := utils.CheckBase().Database("PametniPaketnik").Collection("entries").Find(context.TODO(), entryFilter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find entries"})
-		return
+		//return
 	}
 	for entryCursor.Next(context.Background()) {
 		var entry schemas.Entry
 		if err := entryCursor.Decode(&entry); err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to decode entry"})
-			return
+			//return
 		}
 		entries = append(entries, entry)
 	}
 	if err := entryCursor.Err(); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to iterate over entries"})
-		return
+		//return
 	}
 
 	c.JSON(http.StatusOK, entries)
@@ -71,13 +71,13 @@ func InsertNewEntry(c *gin.Context) {
 
 	if err := c.BindJSON(&newEntry); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		//return
 	}
 
 	result, err := utils.CheckBase().Database("PametniPaketnik").Collection("entries").InsertOne(context.TODO(), newEntry)
 	if err != nil {
 		c.IndentedJSON(http.StatusConflict, err)
-		return
+		//return
 	}
 	fmt.Println(err)
 	fmt.Println(result.InsertedID)
@@ -92,12 +92,12 @@ func RemoveEntry(c *gin.Context) {
 	result, err := utils.CheckBase().Database("PametniPaketnik").Collection("entries").DeleteOne(context.TODO(), filter)
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		//return
 	}
 
 	if result.DeletedCount == 0 {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Entry not found"})
-		return
+		//return
 	}
 
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "Entry deleted successfully"})

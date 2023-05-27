@@ -5,8 +5,9 @@ import (
 	"backend/utils"
 	"context"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
@@ -18,14 +19,14 @@ func LogIn(c *gin.Context) {
 
 	if err := c.BindJSON(&loginUser); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		//return
 	}
 
 	var res schemas.User
 	err := utils.CheckBase().Database("PametniPaketnik").Collection("users").FindOne(context.Background(), bson.M{"username": loginUser.Username, "password": utils.Hash(loginUser.Password)}).Decode(&res)
 	if err == mongo.ErrNoDocuments {
 		c.IndentedJSON(http.StatusForbidden, "Denied")
-		return
+		//return
 	}
 	fmt.Printf(res.Username)
 	c.IndentedJSON(http.StatusOK, res)
@@ -36,7 +37,7 @@ func Register(c *gin.Context) {
 
 	if err := c.BindJSON(&registerUser); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		//return
 	}
 
 	var result schemas.User
@@ -47,7 +48,7 @@ func Register(c *gin.Context) {
 		fmt.Println(err)
 		fmt.Println(result.InsertedID)
 		c.IndentedJSON(http.StatusOK, bson.M{"res": "Proceede", "ID": result.InsertedID.(primitive.ObjectID).Hex()})
-		return
+		//return
 	}
 
 	c.IndentedJSON(http.StatusBadRequest, bson.M{"res": "Denied"})

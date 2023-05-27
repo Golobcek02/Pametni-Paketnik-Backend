@@ -24,7 +24,7 @@ func AddAccess(c *gin.Context) {
 
 	if err := c.BindJSON(&requestData); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		//return
 	}
 
 	str, _ := primitive.ObjectIDFromHex(requestData.UserID)
@@ -34,7 +34,7 @@ func AddAccess(c *gin.Context) {
 
 	if error == mongo.ErrNoDocuments {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Error"})
-		return
+		//return
 	}
 
 	if res.OwnerId == str {
@@ -42,7 +42,7 @@ func AddAccess(c *gin.Context) {
 		error := utils.CheckBase().Database("PametniPaketnik").Collection("users").FindOne(context.TODO(), bson.D{{Key: "username", Value: requestData.AccessId}}).Decode(&r)
 		if error != nil {
 			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Error"})
-			return
+			//return
 		}
 
 		res.AccessIds = append(res.AccessIds, r.ID)
@@ -54,11 +54,11 @@ func AddAccess(c *gin.Context) {
 		)
 		fmt.Println(e)
 		c.IndentedJSON(http.StatusOK, "Added")
-		return
+		//return
 
 	} else {
 		c.IndentedJSON(http.StatusBadRequest, "Error")
-		return
+		//return
 	}
 }
 
@@ -71,7 +71,7 @@ func RevokeAccess(c *gin.Context) {
 
 	if err := c.BindJSON(&requestData); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		//return
 	}
 
 	str, _ := primitive.ObjectIDFromHex(requestData.UserID)
@@ -81,7 +81,7 @@ func RevokeAccess(c *gin.Context) {
 
 	if error == mongo.ErrNoDocuments {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Error"})
-		return
+		//return
 	}
 
 	if res.OwnerId == str {
@@ -89,7 +89,7 @@ func RevokeAccess(c *gin.Context) {
 		error := utils.CheckBase().Database("PametniPaketnik").Collection("users").FindOne(context.TODO(), bson.D{{Key: "username", Value: requestData.AccessId}}).Decode(&r)
 		if error != nil {
 			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Error"})
-			return
+			//return
 		}
 
 		var ret []primitive.ObjectID
@@ -108,11 +108,11 @@ func RevokeAccess(c *gin.Context) {
 		)
 		fmt.Println(e)
 		c.IndentedJSON(http.StatusOK, "Removed!")
-		return
+		//return
 
 	} else {
 		c.IndentedJSON(http.StatusBadRequest, "Error")
-		return
+		//return
 	}
 }
 
@@ -124,14 +124,14 @@ func CheckAccess(c *gin.Context) {
 
 	if err := c.BindJSON(&requestData); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		//return
 	}
 
 	var r schemas.User
 	error := utils.CheckBase().Database("PametniPaketnik").Collection("users").FindOne(context.TODO(), bson.D{{Key: "username", Value: requestData.UserID}}).Decode(&r)
 	if error != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Error"})
-		return
+		//return
 	}
 
 	var allBoxes []schemas.Box
@@ -153,10 +153,10 @@ func CheckAccess(c *gin.Context) {
 		for _, z := range v.AccessIds {
 			if z == r.ID {
 				c.IndentedJSON(http.StatusOK, "Autorised!")
-				return
+				//return
 			}
 		}
 	}
 	c.IndentedJSON(http.StatusNotFound, "Error")
-	return
+	//return
 }

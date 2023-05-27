@@ -19,14 +19,14 @@ func InsertOrder(c *gin.Context) {
 
 	if err := c.BindJSON(&order); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		//return
 	}
 
 	// Insert the order into the database
 	insertResult, err := utils.CheckBase().Database("PametniPaketnik").Collection("orders").InsertOne(context.TODO(), order)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert order"})
-		return
+		//return
 	}
 
 	// Return the inserted order ID
@@ -48,7 +48,7 @@ func GetUserOrders(c *gin.Context) {
 		err := cur.Decode(&elem)
 		if err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, "Error")
-			return
+			//return
 		}
 
 		allBoxes = append(allBoxes, elem)
@@ -56,7 +56,7 @@ func GetUserOrders(c *gin.Context) {
 
 	if len(allBoxes) == 0 {
 		c.IndentedJSON(http.StatusBadRequest, "Error")
-		return
+		//return
 	}
 
 	var boxIDs []int
@@ -69,13 +69,13 @@ func GetUserOrders(c *gin.Context) {
 	})
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, "Error")
-		return
+		//return
 	}
 
 	var orders []schemas.Order
 	if err := ordersCur.All(context.TODO(), &orders); err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, "Error")
-		return
+		//return
 	}
 
 	var OrderIDs []primitive.ObjectID
@@ -86,13 +86,13 @@ func GetUserOrders(c *gin.Context) {
 	roureCur, error := utils.CheckBase().Database("PametniPaketnik").Collection("packageRoutes").Find(context.TODO(), bson.M{"orders": bson.M{"$in": OrderIDs}})
 	if error != nil {
 		c.IndentedJSON(http.StatusInternalServerError, "Error")
-		return
+		//return
 	}
 
 	var routes []schemas.PackageRoutes
 	if err := roureCur.All(context.TODO(), &routes); err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, "Error")
-		return
+		//return
 	}
 
 	c.IndentedJSON(http.StatusOK, orders)
@@ -113,7 +113,7 @@ func GetUserOrderRoutes(c *gin.Context) {
 		err := cur.Decode(&elem)
 		if err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, "Error")
-			return
+			//return
 		}
 
 		allBoxes = append(allBoxes, elem)
@@ -121,7 +121,7 @@ func GetUserOrderRoutes(c *gin.Context) {
 
 	if len(allBoxes) == 0 {
 		c.IndentedJSON(http.StatusBadRequest, "Error")
-		return
+		//return
 	}
 
 	var boxIDs []int
@@ -134,13 +134,13 @@ func GetUserOrderRoutes(c *gin.Context) {
 	})
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, "Error")
-		return
+		//return
 	}
 
 	var orders []schemas.Order
 	if err := ordersCur.All(context.TODO(), &orders); err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, "Error")
-		return
+		//return
 	}
 
 	var OrderIDs []primitive.ObjectID
@@ -151,13 +151,13 @@ func GetUserOrderRoutes(c *gin.Context) {
 	roureCur, error := utils.CheckBase().Database("PametniPaketnik").Collection("packageRoutes").Find(context.TODO(), bson.M{"orders": bson.M{"$in": OrderIDs}})
 	if error != nil {
 		c.IndentedJSON(http.StatusInternalServerError, "Error")
-		return
+		//return
 	}
 
 	var routes []schemas.PackageRoutes
 	if err := roureCur.All(context.TODO(), &routes); err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, "Error")
-		return
+		//return
 	}
 
 	c.IndentedJSON(http.StatusOK, routes)
@@ -172,14 +172,14 @@ func UpdateOrderStatus(c *gin.Context) {
 
 	if err := c.BindJSON(&requestData); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		//return
 	}
 
 	var order []schemas.Order
 	curr, err := utils.CheckBase().Database("PametniPaketnik").Collection("orders").Find(context.TODO(), bson.M{"boxid": requestData.BoxId})
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		//return
 	}
 
 	for curr.Next(context.TODO()) {
@@ -195,7 +195,7 @@ func UpdateOrderStatus(c *gin.Context) {
 		_, error := utils.CheckBase().Database("PametniPaketnik").Collection("orders").UpdateOne(context.TODO(), bson.D{{"_id", v.ID}}, bson.D{{"$set", bson.D{{"Status", requestData.Status}}}}, options.Update().SetUpsert(false))
 		if error != nil {
 			c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
+			//return
 		}
 	}
 

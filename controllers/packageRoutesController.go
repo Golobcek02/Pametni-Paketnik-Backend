@@ -24,7 +24,7 @@ func InsertPackageRoutes(c *gin.Context) {
 
 	if err := c.BindJSON(&requestData); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		//return
 	}
 	BoxIds := strings.Split(requestData.Route, "|")
 
@@ -84,12 +84,12 @@ func InsertPackageRoutes(c *gin.Context) {
 	result, err := utils.CheckBase().Database("PametniPaketnik").Collection("packageRoutes").InsertOne(context.TODO(), packageRoute)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert package routes"})
-		return
+		//return
 	}
 
 	rs, err := utils.CheckBase().Database("PametniPaketnik").Collection("orders").UpdateMany(context.Background(), bson.M{"_id": bson.M{"$in": idarr}}, bson.M{"$set": bson.M{"status": "In Route"}})
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 
 	fmt.Println(rs)
@@ -103,14 +103,14 @@ func UpdateOrderRoute(c *gin.Context) {
 	if err != nil {
 		// Handle the error if the conversion fails
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid BoxID"})
-		return
+		//return
 	}
 
 	// Get the stops array from the request body
 	var stops []string
 	if err := c.BindJSON(&stops); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		//return
 	}
 
 	// Update the order with the given BoxID
@@ -125,7 +125,7 @@ func UpdateOrderRoute(c *gin.Context) {
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update order"})
 		}
-		return
+		//return
 	}
 
 	c.JSON(http.StatusOK, result.ModifiedCount)
@@ -137,14 +137,14 @@ func PopFirstStop(c *gin.Context) {
 	id, err := primitive.ObjectIDFromHex(idStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
-		return
+		//return
 	}
 
 	var packageRoute schemas.PackageRoutes
 	err = utils.CheckBase().Database("PametniPaketnik").Collection("packageRoutes").FindOne(context.TODO(), bson.M{"_id": id}).Decode(&packageRoute)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "PackageRoute not found"})
-		return
+		//return
 	}
 
 	var zeroObjectID primitive.ObjectID
@@ -187,7 +187,7 @@ func PopFirstStop(c *gin.Context) {
 		if len(docs) != 0 {
 			_, err := utils.CheckBase().Database("PametniPaketnik").Collection("entries").InsertMany(context.Background(), docs)
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
 			}
 		}
 
@@ -203,14 +203,14 @@ func PopFirstStop(c *gin.Context) {
 		)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update PackageRoute"})
-			return
+			//return
 		}
 
 		var ord schemas.Order
 		err = utils.CheckBase().Database("PametniPaketnik").Collection("orders").FindOne(context.TODO(), bson.M{"_id": packageRoute.Orders[0]}).Decode(&ord)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update PackageRoute"})
-			return
+			//return
 		}
 
 		var entry schemas.Entry
@@ -225,7 +225,7 @@ func PopFirstStop(c *gin.Context) {
 		_, err = utils.CheckBase().Database("PametniPaketnik").Collection("entries").InsertOne(context.Background(), entry)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update PackageRoute"})
-			return
+			//return
 		}
 
 		packageRoute.Orders = packageRoute.Orders[i:]
@@ -263,7 +263,7 @@ func PopFirstStop(c *gin.Context) {
 		if len(docs) > 0 {
 			_, err := utils.CheckBase().Database("PametniPaketnik").Collection("entries").InsertMany(context.Background(), docs)
 			if err != nil {
-				panic(err)
+				fmt.Println(err)
 			}
 		}
 	}
@@ -275,14 +275,14 @@ func PopFirstStop(c *gin.Context) {
 	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update PackageRoute"})
-		return
+		//return
 	}
 
 	if len(packageRoute.Stops) == 0 {
 		_, err = utils.CheckBase().Database("PametniPaketnik").Collection("packageRoutes").DeleteOne(context.TODO(), bson.M{"_id": id})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update PackageRoute"})
-			return
+			//return
 		}
 	}
 

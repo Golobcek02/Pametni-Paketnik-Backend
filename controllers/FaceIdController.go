@@ -2,13 +2,14 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/gin-gonic/gin"
 )
 
 func LoginFaceID(c *gin.Context) {
@@ -18,7 +19,7 @@ func LoginFaceID(c *gin.Context) {
 	err := c.Request.ParseMultipartForm(32 << 20) // 32MB max memory
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		//return
 	}
 
 	// Get the files from the "File" field
@@ -33,14 +34,14 @@ func LoginFaceID(c *gin.Context) {
 
 	if len(files) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No files uploaded"})
-		return
+		//return
 	}
 
 	// Create a directory to store the images
 	err = os.MkdirAll("images/"+userId, os.ModePerm)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		//return
 	}
 
 	// Iterate over the files and save them
@@ -49,7 +50,7 @@ func LoginFaceID(c *gin.Context) {
 		src, err := file.Open()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+			//return
 		}
 
 		// Create the destination file
@@ -58,7 +59,7 @@ func LoginFaceID(c *gin.Context) {
 		if err != nil {
 			src.Close()
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+			//return
 		}
 
 		// Copy the file contents to the destination
@@ -68,7 +69,7 @@ func LoginFaceID(c *gin.Context) {
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+			//return
 		}
 	}
 
@@ -77,7 +78,7 @@ func LoginFaceID(c *gin.Context) {
 	println(string(out))
 	if err != nil {
 		println(err.Error())
-		//return
+		////return
 	}
 	//neke := string(out)
 	//fmt.Println(neke)
@@ -89,7 +90,7 @@ func LoginFaceID(c *gin.Context) {
 	removeErr := os.RemoveAll("images/" + userId)
 	if removeErr != nil {
 		fmt.Println(removeErr.Error())
-		return
+		//return
 	}
 
 	//res = true
@@ -104,7 +105,7 @@ func RegisterFaceID(c *gin.Context) {
 	err := c.Request.ParseMultipartForm(32 << 20) // 32MB max memory
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		//return
 	}
 
 	// Get the files from the "File" field
@@ -119,14 +120,14 @@ func RegisterFaceID(c *gin.Context) {
 
 	if len(files) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No files uploaded"})
-		return
+		//return
 	}
 
 	// Create a directory to store the images
 	err = os.MkdirAll("images/"+userId, os.ModePerm)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		//return
 	}
 
 	// Iterate over the files and save them
@@ -135,7 +136,7 @@ func RegisterFaceID(c *gin.Context) {
 		src, err := file.Open()
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+			//return
 		}
 
 		// Create the destination file
@@ -144,7 +145,7 @@ func RegisterFaceID(c *gin.Context) {
 		if err != nil {
 			src.Close()
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+			//return
 		}
 
 		// Copy the file contents to the destination
@@ -154,7 +155,7 @@ func RegisterFaceID(c *gin.Context) {
 
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
+			//return
 		}
 	}
 
@@ -163,14 +164,14 @@ func RegisterFaceID(c *gin.Context) {
 		out, err := cmd.Output()
 		if err != nil {
 			println(err.Error())
-			return
+			//return
 		} else {
 			fmt.Println(string(out))
 		}
 		//removeErr := os.RemoveAll("images/" + userId)
 		//if removeErr != nil {
 		//	fmt.Println(removeErr.Error())
-		//	return
+		//	//return
 		//}
 	}()
 

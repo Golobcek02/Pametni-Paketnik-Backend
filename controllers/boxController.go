@@ -24,13 +24,13 @@ func ClaimBox(c *gin.Context) {
 
 	if err := c.BindJSON(&requestData); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		//return
 	}
 
 	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.Background(), bson.D{{}})
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		//return
 	}
 
 	ownerID, err := primitive.ObjectIDFromHex(requestData.UserID)
@@ -45,7 +45,7 @@ func ClaimBox(c *gin.Context) {
 		if elem.BoxId == requestData.BoxID {
 			if elem.OwnerId != emptyID {
 				c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Someone already owns this box"})
-				return
+				//return
 			}
 
 			_, error := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(context.Background(),
@@ -56,11 +56,11 @@ func ClaimBox(c *gin.Context) {
 				options.Update().SetUpsert(true))
 
 			if error != nil {
-				panic(error)
+				fmt.Println(error)
 			}
 
 			c.IndentedJSON(http.StatusOK, gin.H{"message": "Box ownership successfully updated!"})
-			return
+			//return
 		}
 	}
 
@@ -78,14 +78,14 @@ func AddUserBox(c *gin.Context) {
 
 	if err := c.BindJSON(&requestData); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		//return
 	}
 	fmt.Println(requestData)
 
 	cur, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").Find(context.Background(), bson.D{{}})
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		//return
 	}
 
 	str, _ := primitive.ObjectIDFromHex(requestData.UserID)
@@ -100,11 +100,11 @@ func AddUserBox(c *gin.Context) {
 		tmp, _ := strconv.Atoi(requestData.SmartBoxID)
 		if elem.BoxId == tmp && elem.OwnerId != emptyId && elem.OwnerId != str {
 			c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Someone already own this box"})
-			return
+			//return
 		}
 		if elem.BoxId == tmp && elem.OwnerId == str {
 			c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Someone already own this box"})
-			return
+			//return
 		}
 		if elem.BoxId == tmp && elem.OwnerId == emptyId {
 			_, error := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(context.Background(),
@@ -117,11 +117,11 @@ func AddUserBox(c *gin.Context) {
 				options.Update().SetUpsert(true))
 
 			if error != nil {
-				panic(error)
+				fmt.Println(error)
 			}
 
 			c.IndentedJSON(http.StatusOK, gin.H{"message": "Box successfully updated!"})
-			return
+			//return
 		}
 	}
 
@@ -164,12 +164,12 @@ func ClearBoxOwner(c *gin.Context) {
 	res, err := utils.CheckBase().Database("PametniPaketnik").Collection("boxes").UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Error while clearing the owner of this box"})
-		return
+		//return
 	}
 
 	if res.ModifiedCount == 0 {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"error": "Box not found"})
-		return
+		//return
 	}
 
 	c.IndentedJSON(http.StatusOK, gin.H{"message": "Owner of the box successfully cleared"})
@@ -258,7 +258,7 @@ func AuthenticateUser(c *gin.Context) {
 
 	if err := c.BindJSON(&requestData); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		//return
 	}
 	fmt.Println(requestData)
 	str, _ := primitive.ObjectIDFromHex(requestData.UserID)
@@ -273,14 +273,14 @@ func AuthenticateUser(c *gin.Context) {
 	if str == res.OwnerId {
 		result = true
 		c.JSON(http.StatusOK, result)
-		return
+		//return
 	}
 
 	for _, v := range res.AccessIds {
 		if v == str {
 			result = true
 			c.JSON(http.StatusOK, result)
-			return
+			//return
 		}
 	}
 
