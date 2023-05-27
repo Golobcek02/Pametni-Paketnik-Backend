@@ -8,8 +8,8 @@ import numpy as np
 import tensorflow as tf
 from sklearn.model_selection import train_test_split
 
-from Hog import hog
-from Lbp import lbp
+from Hog import Hog
+from Lbp import Lbp
 from ViolaJones import process_images
 
 user_id = sys.argv[1].rstrip("\r\n")
@@ -58,8 +58,8 @@ for img in VJimg:
     if g < image_count:
         img = cv2.resize(img, (100, 100))
         gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        lbp_image = lbp(gray_image)
-        hog_descriptor = hog(gray_image, 8, 2, 9)
+        lbp_image = Lbp(gray_image)
+        hog_descriptor = Hog(gray_image, 8, 2, 9)
         feature_vector = np.concatenate((lbp_image.flatten(), hog_descriptor))
         images.append(feature_vector)
     g = g + 1
