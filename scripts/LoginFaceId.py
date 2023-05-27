@@ -32,27 +32,13 @@ for img in vector:
 
 images = np.array(images)
 loaded_model = tf.keras.models.load_model("models/" + user_id + ".h5")
-labels = np.ones(4)
+labels = np.ones(len(images))
 
 # Predict the labels for the three images
 three_predictions = loaded_model.predict(images)
 predicted_labels = np.argmax(three_predictions, axis=1)
 accuracy = np.mean(predicted_labels == labels)
-print(predicted_labels)
-
-"""
-# Append the accuracy to an array
-accuracies =0
-
-accuracies.append(accuracy)
-print(accuracies)
-for acc in accuracy:
-    accuracies+=acc
-
-accuracies=accuracies/3
-if accuracies>0.6:
+if accuracy>0.6:
     print(True)
 else:
     print(False)
-
-# Print the array of accuracies
