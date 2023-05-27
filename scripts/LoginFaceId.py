@@ -7,16 +7,22 @@ import os
 import sys
 from Lbp import lbp
 from Hog import hog
+from ViolaJones import process_images
 
 user_id = sys.argv[1].rstrip("\r\n")
-
 folder_path = f"images/{user_id}"
 files = os.listdir(folder_path)
 image_count = len(files)
 
-images = []
+vector = []
+images=[]
 for file in glob.glob(f"images/{str(user_id)}/*.*"):
     img = cv2.imread(file)
+    img=cv2.rotate(img, cv2.ROTATE_90_COUNTERCLOCKWISE)
+    vector.append(img)
+
+vector=process_images(vector)
+for img in vector:
     img = cv2.resize(img, (100, 100))
     gray_image = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     lbp_image = lbp(gray_image)
@@ -25,15 +31,16 @@ for file in glob.glob(f"images/{str(user_id)}/*.*"):
     images.append(feature_vector)
 
 images = np.array(images)
-loaded_model = tf.keras.models.load_model("models/" + id + ".h5")
-labels = np.ones(3)
+loaded_model = tf.keras.models.load_model("models/" + user_id + ".h5")
+labels = np.ones(4)
 
 # Predict the labels for the three images
 three_predictions = loaded_model.predict(images)
 predicted_labels = np.argmax(three_predictions, axis=1)
 accuracy = np.mean(predicted_labels == labels)
-#print("Accuracy for the three images:", accuracy)
+print(predicted_labels)
 
+"""
 # Append the accuracy to an array
 accuracies =0
 
