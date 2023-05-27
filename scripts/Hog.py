@@ -1,6 +1,6 @@
 import numpy as np
 
-def hog(gray_image, cell_size, block_size, num_bins):
+def Hog(gray_image, cell_size, block_size, num_bins):
     height, width = gray_image.shape
     gx = np.zeros_like(gray_image, dtype=np.float32)
     gy = np.zeros_like(gray_image, dtype=np.float32)
