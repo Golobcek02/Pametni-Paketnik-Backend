@@ -86,12 +86,16 @@ func LoginFaceID(c *gin.Context) {
 		fmt.Println(removeErr.Error())
 		//return
 	}
+
 	stringOut := string(out)
-	if stringOut[len(stringOut)-1] != 'T' {
+	fmt.Println(stringOut)
+	lastString := string(stringOut[len(stringOut)-3])
+	fmt.Println(lastString)
+	if lastString != "T" {
 		c.JSON(http.StatusOK, false)
+	} else {
+		c.JSON(http.StatusOK, true)
 	}
-	//res = true
-	c.JSON(http.StatusOK, true)
 }
 
 func RegisterFaceID(c *gin.Context) {
@@ -163,11 +167,19 @@ func RegisterFaceID(c *gin.Context) {
 		println(err.Error())
 	}
 
-	stringOut := string(out)
-
-	if stringOut[len(stringOut)-1] != 'T' {
-		c.JSON(http.StatusOK, false)
+	removeErr := os.RemoveAll("images/" + userId)
+	if removeErr != nil {
+		fmt.Println(removeErr.Error())
+		//return
 	}
 
-	c.JSON(http.StatusOK, true)
+	stringOut := string(out)
+	fmt.Println(stringOut)
+	lastString := string(stringOut[len(stringOut)-3])
+	fmt.Println(lastString)
+	if lastString != "T" {
+		c.JSON(http.StatusOK, false)
+	} else {
+		c.JSON(http.StatusOK, true)
+	}
 }
