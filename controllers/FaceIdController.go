@@ -82,7 +82,7 @@ func LoginFaceID(c *gin.Context) {
 	}
 	//neke := string(out)
 	//fmt.Println(neke)
-	res := true
+	//res := true
 	//if string(out)[0] != 'T' {
 	//	res = false
 	//}
@@ -94,7 +94,7 @@ func LoginFaceID(c *gin.Context) {
 	}
 
 	//res = true
-	c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, true)
 }
 
 func RegisterFaceID(c *gin.Context) {
