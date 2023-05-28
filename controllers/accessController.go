@@ -5,7 +5,6 @@ import (
 	"backend/utils"
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -144,7 +143,8 @@ func CheckAccess(c *gin.Context) {
 		var elem schemas.Box
 		err := cur.Decode(&elem)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			//log.Fatal(err)
 		}
 		allBoxes = append(allBoxes, elem)
 	}

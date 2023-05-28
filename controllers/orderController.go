@@ -4,7 +4,7 @@ import (
 	"backend/schemas"
 	"backend/utils"
 	"context"
-	"log"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -186,7 +186,8 @@ func UpdateOrderStatus(c *gin.Context) {
 		var elem schemas.Order
 		err := curr.Decode(&elem)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			//log.Fatal(err)
 		}
 		order = append(order, elem)
 	}

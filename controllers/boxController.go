@@ -5,7 +5,6 @@ import (
 	"backend/utils"
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -39,7 +38,8 @@ func ClaimBox(c *gin.Context) {
 		var elem schemas.Box
 		err := cur.Decode(&elem)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			//log.Fatal(err)
 		}
 
 		if elem.BoxId == requestData.BoxID {
@@ -94,7 +94,8 @@ func AddUserBox(c *gin.Context) {
 		var elem schemas.Box
 		err := cur.Decode(&elem)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			//log.Fatal(err)
 		}
 
 		tmp, _ := strconv.Atoi(requestData.SmartBoxID)
@@ -191,7 +192,8 @@ func GetUserBoxesAndAccesses(c *gin.Context) {
 		var elem schemas.Box
 		err := cur.Decode(&elem)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			//log.Fatal(err)
 		}
 		if len(elem.AccessIds) > 0 {
 			var boxUsernames []string
@@ -201,7 +203,8 @@ func GetUserBoxesAndAccesses(c *gin.Context) {
 				if err == mongo.ErrNoDocuments {
 					continue // user not found, skip to next id
 				} else if err != nil {
-					log.Fatal(err)
+					fmt.Println(err)
+					//log.Fatal(err)
 				}
 				boxUsernames = append(boxUsernames, user.Username)
 			}
@@ -234,7 +237,8 @@ func GetUserBoxes(c *gin.Context) {
 		var elem schemas.Box
 		err := cur.Decode(&elem)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			//log.Fatal(err)
 		}
 
 		// Ignore the AccessIds for this request

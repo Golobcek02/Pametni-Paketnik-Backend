@@ -5,7 +5,6 @@ import (
 	"backend/utils"
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -38,7 +37,8 @@ func InsertPackageRoutes(c *gin.Context) {
 		var elem schemas.Box
 		err := cur.Decode(&elem)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			//log.Fatal(err)
 		}
 		box = append(box, elem)
 	}
@@ -53,7 +53,8 @@ func InsertPackageRoutes(c *gin.Context) {
 		var element schemas.Order
 		err := curr.Decode(&element)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
+			//log.Fatal(err)
 		}
 		ord = append(ord, element)
 	}
@@ -162,7 +163,8 @@ func PopFirstStop(c *gin.Context) {
 			var element schemas.Order
 			err := rs.Decode(&element)
 			if err != nil {
-				log.Fatal(err)
+				fmt.Println(err)
+				//log.Fatal(err)
 			}
 
 			for _, v := range packageRoute.Orders {
@@ -238,7 +240,8 @@ func PopFirstStop(c *gin.Context) {
 			var element schemas.Order
 			err := rs.Decode(&element)
 			if err != nil {
-				log.Fatal(err)
+				fmt.Println(err)
+				//log.Fatal(err)
 			}
 
 			for _, v := range packageRoute.Orders {
