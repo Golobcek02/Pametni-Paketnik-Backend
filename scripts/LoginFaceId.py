@@ -40,6 +40,6 @@ three_predictions = loaded_model.predict(images)
 predicted_labels = np.argmax(three_predictions, axis=1)
 accuracy = np.mean(predicted_labels == labels)
 if accuracy > 0.6:
-    print(True)
+    print("T")
 else:
-    print(False)
+    print("F")

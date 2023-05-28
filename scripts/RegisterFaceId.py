@@ -96,4 +96,4 @@ model.fit(X_train, y_train_encoded, epochs=15, batch_size=32, validation_data=(X
 # # Evaluate model
 test_loss, test_acc = model.evaluate(X_test, y_test_encoded)
 model.save("models/" + user_id + ".h5")
-# print(True)
+print("T")
