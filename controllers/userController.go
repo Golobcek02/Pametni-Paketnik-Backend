@@ -49,7 +49,8 @@ func Register(c *gin.Context) {
 		fmt.Println(result.InsertedID)
 		c.IndentedJSON(http.StatusOK, bson.M{"res": "Proceede", "ID": result.InsertedID.(primitive.ObjectID).Hex()})
 		//return
+	} else {
+		c.IndentedJSON(http.StatusBadRequest, bson.M{"res": "Denied"})
 	}
 
-	c.IndentedJSON(http.StatusBadRequest, bson.M{"res": "Denied"})
 }

@@ -14,7 +14,7 @@ from ViolaJones import process_images
 
 user_id = sys.argv[1].rstrip("\r\n")
 
-folder_path = f"images/{user_id}"
+folder_path = f"../images/{user_id}"
 
 files = os.listdir(folder_path)
 
@@ -23,7 +23,7 @@ image_count = len(files)
 data = []
 
 with h5py.File('models/baseModel.h5', 'r') as f:
-    data = f['baseModel'][:]
+    data = f['basemodel'][:]
 data = np.array(data)
 
 base_model_images = len(data)
