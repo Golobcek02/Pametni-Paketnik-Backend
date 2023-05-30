@@ -28,11 +28,18 @@ RUN wget https://www.python.org/ftp/python/3.11.3/Python-3.11.3.tgz && \
     cd .. && \
     rm -rf Python-3.11.3.tgz Python-3.11.3
 
+# Set Python 3.11 in the PATH
+ENV PATH="/usr/local/bin:${PATH}"
+
+# Create a symbolic link from python3.11 to python
+RUN ln -s /usr/local/bin/python3.11 /usr/local/bin/python
+
 # Install TensorFlow, OpenCV, and scikit-learn using pip
-RUN python3.11 -m ensurepip && \
-    python3.11 -m pip install --upgrade pip && \
-    python3.11 -m pip install tensorflow opencv-python scikit-learn
+RUN python -m ensurepip && \
+    python -m pip install --upgrade pip && \
+    python -m pip install tensorflow opencv-python scikit-learn
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /ppbackend ./main/main.go
 EXPOSE 5551
 CMD ["/ppbackend"]
+

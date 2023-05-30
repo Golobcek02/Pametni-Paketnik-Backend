@@ -89,9 +89,10 @@ func LoginFaceID(c *gin.Context) {
 
 	stringOut := string(out)
 	fmt.Println(stringOut)
-	lastString := string(stringOut[len(stringOut)-3])
+	lastString := strings.Contains(stringOut, "Login successfull")
+	fmt.Println("neke")
 	fmt.Println(lastString)
-	if lastString != "T" {
+	if !lastString {
 		c.JSON(http.StatusOK, false)
 	} else {
 		c.JSON(http.StatusOK, true)
@@ -175,9 +176,10 @@ func RegisterFaceID(c *gin.Context) {
 
 	stringOut := string(out)
 	fmt.Println(stringOut)
-	lastString := string(stringOut[len(stringOut)-3])
+	lastString := strings.Contains(stringOut, "Model added")
+	fmt.Println("neke")
 	fmt.Println(lastString)
-	if lastString != "T" {
+	if !lastString {
 		c.JSON(http.StatusOK, false)
 	} else {
 		c.JSON(http.StatusOK, true)
