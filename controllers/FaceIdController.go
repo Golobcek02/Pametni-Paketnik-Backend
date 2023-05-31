@@ -74,7 +74,7 @@ func LoginFaceID(c *gin.Context) {
 	}
 
 	cmd := exec.Command("python", "scripts/LoginFaceId.py", userId)
-	out, err := cmd.Output()
+	out, err := cmd.CombinedOutput()
 	println(string(out))
 	if err != nil {
 		println(err.Error())
@@ -162,7 +162,7 @@ func RegisterFaceID(c *gin.Context) {
 	}
 
 	cmd := exec.Command("python", "scripts/RegisterFaceId.py", userId)
-	out, err := cmd.Output()
+	out, err := cmd.CombinedOutput()
 
 	if err != nil {
 		println(err.Error())
