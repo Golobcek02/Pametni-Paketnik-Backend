@@ -3,9 +3,14 @@ package controllers
 import (
 	"backend/schemas"
 	"backend/utils"
+	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -288,5 +293,160 @@ func AuthenticateUser(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusForbidden, result)
+	//c.JSON(http.StatusForbidden, result)
+}
+
+func AddImage(c *gin.Context) {
+	boxID := c.Param("id")
+
+	// Save the uploaded BMP picture
+	ctx := context.WithValue(context.Background(), "boxID", boxID)
+	err := SaveBMPImage(ctx, c.Request)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Error saving BMP picture"})
+		return
+	}
+
+	err = runCSharpCompression(boxID)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Error running C# compression"})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "Image successfully added"})
+}
+
+func SaveBMPImage(ctx context.Context, req *http.Request) error {
+	boxID, ok := ctx.Value("boxID").(string)
+	if !ok {
+		return fmt.Errorf("boxID not found in context")
+	}
+
+	file, _, err := req.FormFile("file")
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	if err := os.MkdirAll("images/boxPictures", os.ModePerm); err != nil {
+		return err
+	}
+
+	fileName := filepath.Join("images/boxPictures", boxID+".bmp")
+
+	dstFile, err := os.Create(fileName)
+	if err != nil {
+		return err
+	}
+	defer dstFile.Close()
+
+	_, err = io.Copy(dstFile, file)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func runCSharpCompression(fileName string) error {
+	// Specify the path to the C# binary
+	csharpBinary := "scripts/compression.exe"
+
+	// Log the command being executed
+	fmt.Printf("Executing command: %s %s\n", csharpBinary, fileName)
+
+	// Run the C# binary and pass the filename as an argument
+	cmd := exec.Command(csharpBinary, fileName)
+
+	// Capture and log the standard output and standard error
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	// Run the command
+	err := cmd.Run()
+	if err != nil {
+		// Log the error message
+		fmt.Printf("Error running C# compression: %s\n", err)
+
+		// Log the standard output and standard error
+		fmt.Printf("C# Binary Output:\n%s\n", stdout.String())
+		fmt.Printf("C# Binary Error:\n%s\n", stderr.String())
+	}
+
+	bmpFilePath := filepath.Join("images/boxPictures", fileName+".bmp")
+	if err := os.Remove(bmpFilePath); err != nil {
+		fmt.Printf("Error deleting BMP file: %s\n", err)
+	}
+
+	return err
+}
+
+func CheckBinFile(c *gin.Context) {
+	boxID := c.Param("id")
+	binFilePath := filepath.Join("images/boxPictures/", fmt.Sprintf("out_%s.bin", boxID))
+
+	_, err := os.Stat(binFilePath)
+	if os.IsNotExist(err) {
+		c.JSON(http.StatusOK, gin.H{"exists": false})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"exists": true})
+}
+
+func GetBMPImage(c *gin.Context) {
+	boxID := c.Param("id")
+
+	// Check if the .bin file exists for the given boxID
+	binFilePath := filepath.Join("images/boxPictures/", "out_"+boxID+".bin")
+	if _, err := os.Stat(binFilePath); os.IsNotExist(err) {
+		// .bin file does not exist, return an error or handle it as needed
+		c.IndentedJSON(http.StatusNotFound, gin.H{"error": "Image not found"})
+		return
+	}
+
+	// Decompress the image
+	decompressedImagePath, err := runCSharpDecompression(binFilePath, boxID)
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Error running decompression"})
+		return
+	}
+
+	// Serve the decompressed BMP image
+	c.File(decompressedImagePath)
+
+	// Delete the decompressed BMP image after serving
+	if err := os.Remove(decompressedImagePath); err != nil {
+		fmt.Printf("Error deleting decompressed image: %s\n", err)
+	}
+}
+
+func runCSharpDecompression(binFilePath string, boxID string) (string, error) {
+	// Specify the path to the C# decompression binary
+	csharpDecompressionBinary := "scripts/Vaja2.exe"
+
+	// Generate the decompressed image path
+	decompressedImagePath := filepath.Join("images/boxPictures/", "decompressed_"+boxID+".bmp")
+	fmt.Printf("Executing command: %s %s %s\n", csharpDecompressionBinary, binFilePath, decompressedImagePath)
+
+	cmd := exec.Command(csharpDecompressionBinary, boxID, decompressedImagePath)
+
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
+
+	// Run the command
+	err := cmd.Run()
+	if err != nil {
+		// Log the error message
+		fmt.Printf("Error running C# decompression: %s\n", err)
+
+		// Log the standard output and standard error
+		fmt.Printf("C# Binary Output:\n%s\n", stdout.String())
+		fmt.Printf("C# Binary Error:\n%s\n", stderr.String())
+		return "", err
+	}
+
+	return decompressedImagePath, nil
 }

@@ -30,4 +30,7 @@ func Router(Router *gin.Engine) {
 	Router.POST("/login2fa/:id", controllers.LoginFaceID)
 	Router.POST("/createFaceID/:id", controllers.RegisterFaceID)
 	Router.POST("/authenticateUser", controllers.AuthenticateUser)
+	Router.POST("/saveBMP/:id", controllers.AddImage)
+	Router.GET("/checkBinFile/:id", controllers.CheckBinFile)
+	Router.GET("/getBMPImage/:id", controllers.GetBMPImage)
 }
